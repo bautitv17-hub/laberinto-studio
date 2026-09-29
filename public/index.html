@@ -5,7 +5,6 @@
 <head>
 
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Juego Online</title>
@@ -59,6 +58,7 @@ button {
 
 input {
     outline: none;
+    text-transform: uppercase;
 }
 
 button {
@@ -293,22 +293,16 @@ const MAP = [
 ];
 
 
-const ROWS =
-    MAP.length;
-
-const COLS =
-    MAP[0].length;
+const ROWS = MAP.length;
+const COLS = MAP[0].length;
 
 
-canvas.width =
-    COLS * CELL;
-
-canvas.height =
-    ROWS * CELL;
+canvas.width = COLS * CELL;
+canvas.height = ROWS * CELL;
 
 
 /* =====================================================
-   JUGADOR
+   JUGADOR LOCAL
 ===================================================== */
 
 let miId = null;
@@ -330,13 +324,15 @@ const player = {
 
 /* =====================================================
    JUGADORES ONLINE
+
+   SIEMPRE SERÁ UN ARRAY
 ===================================================== */
 
 let jugadores = [];
 
 
 /* =====================================================
-   ENCONTRAR POSICIÓN INICIAL
+   POSICIÓN INICIAL
 ===================================================== */
 
 function findPlayerStart() {
@@ -383,9 +379,22 @@ socket.on("connect", () => {
     miId = socket.id;
 
     console.log(
-        "Conectado:",
+        "Conectado al servidor:",
         miId
     );
+
+});
+
+
+socket.on("connect_error", (error) => {
+
+    console.error(
+        "Error de conexión:",
+        error
+    );
+
+    mensaje.textContent =
+        "No se pudo conectar al servidor.";
 
 });
 
@@ -410,7 +419,7 @@ crearSala.addEventListener(
 
 
 /* =====================================================
-   UNIRSE
+   UNIRSE A SALA
 ===================================================== */
 
 unirseSala.addEventListener(
@@ -447,7 +456,7 @@ unirseSala.addEventListener(
 
 
 /* =====================================================
-   SALA CREADA / SALA UNIDA
+   ENTRAR AL JUEGO
 ===================================================== */
 
 socket.on(
@@ -479,12 +488,23 @@ function entrarAlJuego(datos) {
         "block";
 
 
-    codigoSala.textContent =
-        datos.codigo || "";
+    if (datos && datos.codigo) {
+
+        codigoSala.textContent =
+            datos.codigo;
+
+    }
 
 
-    cantidadJugadores.textContent =
-        datos.jugadores || 1;
+    if (
+        datos &&
+        typeof datos.jugadores === "number"
+    ) {
+
+        cantidadJugadores.textContent =
+            datos.jugadores;
+
+    }
 
 
     mensaje.textContent = "";
@@ -494,23 +514,85 @@ function entrarAlJuego(datos) {
 
 /* =====================================================
    ACTUALIZAR JUGADORES
+
+   ESTA PARTE ES LA QUE EVITA
+   EL ERROR .find / .forEach
 ===================================================== */
 
 socket.on(
     "actualizarJugadores",
-    (lista) => {
+    (listaRecibida) => {
 
-        jugadores =
-            lista || [];
+        console.log(
+            "Jugadores recibidos:",
+            listaRecibida
+        );
 
+
+        /*
+         * Asegurarnos de que sea un array.
+         */
+
+        if (
+            Array.isArray(listaRecibida)
+        ) {
+
+            jugadores =
+                listaRecibida;
+
+        }
+
+        /*
+         * Por seguridad, si el servidor
+         * manda un objeto con una propiedad
+         * jugadores, también lo aceptamos.
+         */
+
+        else if (
+            listaRecibida &&
+            Array.isArray(
+                listaRecibida.jugadores
+            )
+        ) {
+
+            jugadores =
+                listaRecibida.jugadores;
+
+        }
+
+        /*
+         * Si llega cualquier otra cosa,
+         * usamos un array vacío.
+         */
+
+        else {
+
+            console.warn(
+                "Formato incorrecto recibido:",
+                listaRecibida
+            );
+
+            jugadores = [];
+
+        }
+
+
+        /*
+         * Actualizar contador.
+         */
 
         cantidadJugadores.textContent =
             jugadores.length;
 
 
+        /*
+         * Buscar nuestro jugador.
+         */
+
         const yo =
             jugadores.find(
                 jugador =>
+                    jugador &&
                     jugador.id === miId
             );
 
@@ -518,33 +600,43 @@ socket.on(
         if (yo) {
 
             /*
-             * Solo corregimos nuestra posición
-             * si estamos muy lejos de la posición
-             * que tiene el servidor.
+             * Comprobar que tenga coordenadas.
              */
 
-            const diferenciaX =
-                Math.abs(
-                    yo.x - player.x
-                );
-
-
-            const diferenciaY =
-                Math.abs(
-                    yo.y - player.y
-                );
-
-
             if (
-                diferenciaX > 80 ||
-                diferenciaY > 80
+                typeof yo.x === "number" &&
+                typeof yo.y === "number"
             ) {
 
-                player.x =
-                    yo.x;
+                const diferenciaX =
+                    Math.abs(
+                        yo.x - player.x
+                    );
 
-                player.y =
-                    yo.y;
+
+                const diferenciaY =
+                    Math.abs(
+                        yo.y - player.y
+                    );
+
+
+                /*
+                 * Solo corregir si hay una
+                 * diferencia grande.
+                 */
+
+                if (
+                    diferenciaX > 80 ||
+                    diferenciaY > 80
+                ) {
+
+                    player.x =
+                        yo.x;
+
+                    player.y =
+                        yo.y;
+
+                }
 
             }
 
@@ -555,7 +647,7 @@ socket.on(
 
 
 /* =====================================================
-   ERRORES
+   ERROR DE SALA
 ===================================================== */
 
 socket.on(
@@ -718,30 +810,19 @@ function updateDirection() {
 
 
     if (keys.left) {
-
         dx--;
-
     }
-
 
     if (keys.right) {
-
         dx++;
-
     }
-
 
     if (keys.up) {
-
         dy--;
-
     }
 
-
     if (keys.down) {
-
         dy++;
-
     }
 
 
@@ -777,7 +858,7 @@ function updateDirection() {
 
 
 /* =====================================================
-   PARED
+   DETECTAR PARED
 ===================================================== */
 
 function isWall(x, y) {
@@ -812,7 +893,7 @@ function isWall(x, y) {
 
 
 /* =====================================================
-   COLISIÓN
+   COLISIONES
 ===================================================== */
 
 function canMove(x, y) {
@@ -882,7 +963,8 @@ function updatePlayer(delta) {
 
 
     const nextX =
-        player.x + moveX;
+        player.x +
+        moveX;
 
 
     if (
@@ -899,7 +981,8 @@ function updatePlayer(delta) {
 
 
     const nextY =
-        player.y + moveY;
+        player.y +
+        moveY;
 
 
     if (
@@ -916,7 +999,8 @@ function updatePlayer(delta) {
 
 
     /*
-     * Enviar posición.
+     * Mandar posición solamente
+     * cuando nos estamos moviendo.
      */
 
     if (
@@ -987,7 +1071,9 @@ function drawMap() {
                     CELL - 2
                 );
 
-            } else {
+            }
+
+            else {
 
                 ctx.fillStyle =
                     "#000";
@@ -1064,6 +1150,7 @@ function drawPlayer(
 
     /*
      * Borde
+
      */
 
     ctx.beginPath();
@@ -1133,11 +1220,29 @@ function drawPlayer(
 function drawPlayers() {
 
     /*
-     * Dibujar jugadores remotos.
+     * Seguridad.
+     */
+
+    if (
+        !Array.isArray(jugadores)
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+     * Jugadores remotos.
      */
 
     jugadores.forEach(
         (jugador, indice) => {
+
+            if (!jugador) {
+                return;
+            }
+
 
             if (
                 jugador.id === miId
@@ -1171,7 +1276,7 @@ function drawPlayers() {
 
 
     /*
-     * Dibujar nuestro jugador.
+     * Nuestro jugador.
      */
 
     drawPlayer(
@@ -1185,7 +1290,7 @@ function drawPlayers() {
 
 
 /* =====================================================
-   DIBUJAR
+   DIBUJAR TODO
 ===================================================== */
 
 function draw() {
@@ -1250,5 +1355,698 @@ requestAnimationFrame(
 </script>
 
 </body>
+
 </html>
+```
+
+### `server.js`
+
+```js
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+const path = require("path");
+
+
+/* =====================================================
+   SERVIDOR
+===================================================== */
+
+const app =
+    express();
+
+const server =
+    http.createServer(app);
+
+const io =
+    new Server(server);
+
+
+/* =====================================================
+   CONFIGURACIÓN
+===================================================== */
+
+const PORT = 3000;
+
+
+/*
+ * Servir los archivos del proyecto.
+ */
+
+app.use(
+    express.static(__dirname)
+);
+
+
+/*
+ * Página principal.
+ */
+
+app.get(
+    "/",
+    (req, res) => {
+
+        res.sendFile(
+            path.join(
+                __dirname,
+                "index.html"
+            )
+        );
+
+    }
+);
+
+
+/* =====================================================
+   SALAS
+===================================================== */
+
+const salas = {};
+
+
+/* =====================================================
+   GENERAR CÓDIGO
+===================================================== */
+
+function generarCodigo() {
+
+    const caracteres =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    let codigo;
+
+
+    do {
+
+        codigo = "";
+
+
+        for (
+            let i = 0;
+            i < 5;
+            i++
+        ) {
+
+            codigo +=
+                caracteres[
+                    Math.floor(
+                        Math.random() *
+                        caracteres.length
+                    )
+                ];
+
+        }
+
+    } while (
+        salas[codigo]
+    );
+
+
+    return codigo;
+
+}
+
+
+/* =====================================================
+   POSICIONES INICIALES
+===================================================== */
+
+const posicionesIniciales = [
+
+    {
+        x: 50,
+        y: 50
+    },
+
+    {
+        x: 700,
+        y: 50
+    },
+
+    {
+        x: 50,
+        y: 550
+    },
+
+    {
+        x: 700,
+        y: 550
+    }
+
+];
+
+
+/* =====================================================
+   ENVIAR JUGADORES
+===================================================== */
+
+function enviarJugadores(codigo) {
+
+    const sala =
+        salas[codigo];
+
+
+    if (!sala) {
+
+        return;
+
+    }
+
+
+    /*
+     * MUY IMPORTANTE:
+     * Siempre enviamos un ARRAY.
+     */
+
+    const lista =
+        sala.jugadores.map(
+            jugador => ({
+                id: jugador.id,
+                x: jugador.x,
+                y: jugador.y
+            })
+        );
+
+
+    io.to(codigo).emit(
+        "actualizarJugadores",
+        lista
+    );
+
+}
+
+
+/* =====================================================
+   CONEXIONES
+===================================================== */
+
+io.on(
+    "connection",
+    (socket) => {
+
+        console.log(
+            "Jugador conectado:",
+            socket.id
+        );
+
+
+        /* =============================================
+           CREAR SALA
+        ============================================= */
+
+        socket.on(
+            "crearSala",
+            () => {
+
+                if (socket.sala) {
+
+                    socket.emit(
+                        "errorSala",
+                        "Ya estás dentro de una sala."
+                    );
+
+                    return;
+
+                }
+
+
+                const codigo =
+                    generarCodigo();
+
+
+                salas[codigo] = {
+
+                    jugadores: []
+
+                };
+
+
+                /*
+                 * Primer jugador.
+                 */
+
+                const jugador = {
+
+                    id: socket.id,
+
+                    x:
+                        posicionesIniciales[0].x,
+
+                    y:
+                        posicionesIniciales[0].y
+
+                };
+
+
+                salas[codigo]
+                    .jugadores
+                    .push(jugador);
+
+
+                socket.join(codigo);
+
+                socket.sala =
+                    codigo;
+
+
+                console.log(
+                    "Sala creada:",
+                    codigo
+                );
+
+
+                /*
+                 * Responder al creador.
+                 */
+
+                socket.emit(
+                    "salaCreada",
+                    {
+
+                        codigo:
+                            codigo,
+
+                        jugadores:
+                            salas[codigo]
+                                .jugadores
+                                .length
+
+                    }
+                );
+
+
+                /*
+                 * Actualizar jugadores.
+                 */
+
+                enviarJugadores(
+                    codigo
+                );
+
+            }
+        );
+
+
+        /* =============================================
+           UNIRSE A SALA
+        ============================================= */
+
+        socket.on(
+            "unirseSala",
+            (codigoRecibido) => {
+
+                const codigo =
+                    String(
+                        codigoRecibido || ""
+                    )
+                    .trim()
+                    .toUpperCase();
+
+
+                console.log(
+                    "Solicitud para entrar:",
+                    socket.id,
+                    codigo
+                );
+
+
+                /*
+                 * Código vacío.
+                 */
+
+                if (!codigo) {
+
+                    socket.emit(
+                        "errorSala",
+                        "Escribí un código."
+                    );
+
+                    return;
+
+                }
+
+
+                /*
+                 * La sala no existe.
+                 */
+
+                if (!salas[codigo]) {
+
+                    socket.emit(
+                        "errorSala",
+                        "La sala no existe."
+                    );
+
+                    return;
+
+                }
+
+
+                /*
+                 * Máximo 4 jugadores.
+                 */
+
+                if (
+                    salas[codigo]
+                        .jugadores
+                        .length >= 4
+                ) {
+
+                    socket.emit(
+                        "errorSala",
+                        "La sala está llena."
+                    );
+
+                    return;
+
+                }
+
+
+                /*
+                 * Si estaba en otra sala,
+                 * abandonarla.
+                 */
+
+                if (socket.sala) {
+
+                    abandonarSala(
+                        socket
+                    );
+
+                }
+
+
+                const numeroJugador =
+                    salas[codigo]
+                        .jugadores
+                        .length;
+
+
+                const posicion =
+                    posicionesIniciales[
+                        numeroJugador
+                    ];
+
+
+                /*
+                 * Crear jugador.
+                 */
+
+                const jugador = {
+
+                    id: socket.id,
+
+                    x: posicion.x,
+
+                    y: posicion.y
+
+                };
+
+
+                salas[codigo]
+                    .jugadores
+                    .push(jugador);
+
+
+                socket.join(codigo);
+
+                socket.sala =
+                    codigo;
+
+
+                console.log(
+                    "Jugador",
+                    socket.id,
+                    "entró a la sala",
+                    codigo
+                );
+
+
+                /*
+                 * Avisar al jugador.
+                 */
+
+                socket.emit(
+                    "salaCreada",
+                    {
+
+                        codigo:
+                            codigo,
+
+                        jugadores:
+                            salas[codigo]
+                                .jugadores
+                                .length
+
+                    }
+                );
+
+
+                /*
+                 * Actualizar TODOS.
+                 */
+
+                enviarJugadores(
+                    codigo
+                );
+
+            }
+        );
+
+
+        /* =============================================
+           MOVIMIENTO
+        ============================================= */
+
+        socket.on(
+            "moverJugador",
+            (datos) => {
+
+                /*
+                 * Verificar sala.
+                 */
+
+                if (!socket.sala) {
+
+                    return;
+
+                }
+
+
+                const sala =
+                    salas[
+                        socket.sala
+                    ];
+
+
+                if (!sala) {
+
+                    return;
+
+                }
+
+
+                /*
+                 * Buscar jugador.
+                 */
+
+                const jugador =
+                    sala.jugadores.find(
+                        jugador =>
+                            jugador.id === socket.id
+                    );
+
+
+                if (!jugador) {
+
+                    return;
+
+                }
+
+
+                /*
+                 * Verificar coordenadas.
+                 */
+
+                if (
+                    !datos ||
+                    typeof datos.x !== "number" ||
+                    typeof datos.y !== "number"
+                ) {
+
+                    return;
+
+                }
+
+
+                /*
+                 * Guardar posición.
+                 */
+
+                jugador.x =
+                    datos.x;
+
+                jugador.y =
+                    datos.y;
+
+
+                /*
+                 * Enviar SIEMPRE un array.
+                 */
+
+                enviarJugadores(
+                    socket.sala
+                );
+
+            }
+        );
+
+
+        /* =============================================
+           DESCONEXIÓN
+        ============================================= */
+
+        socket.on(
+            "disconnect",
+            () => {
+
+                console.log(
+                    "Jugador desconectado:",
+                    socket.id
+                );
+
+
+                abandonarSala(
+                    socket
+                );
+
+            }
+        );
+
+
+        /* =============================================
+           ABANDONAR SALA
+        ============================================= */
+
+        function abandonarSala(
+            jugadorSocket
+        ) {
+
+            const codigo =
+                jugadorSocket.sala;
+
+
+            if (!codigo) {
+
+                return;
+
+            }
+
+
+            const sala =
+                salas[codigo];
+
+
+            if (!sala) {
+
+                jugadorSocket.sala =
+                    null;
+
+                return;
+
+            }
+
+
+            /*
+             * Quitar jugador.
+             */
+
+            sala.jugadores =
+                sala.jugadores.filter(
+                    jugador =>
+                        jugador.id !==
+                        jugadorSocket.id
+                );
+
+
+            /*
+             * Salir de Socket.IO.
+             */
+
+            jugadorSocket.leave(
+                codigo
+            );
+
+
+            jugadorSocket.sala =
+                null;
+
+
+            /*
+             * Si no queda nadie,
+             * eliminar sala.
+             */
+
+            if (
+                sala.jugadores.length === 0
+            ) {
+
+                delete salas[codigo];
+
+
+                console.log(
+                    "Sala eliminada:",
+                    codigo
+                );
+
+
+                return;
+
+            }
+
+
+            /*
+             * Actualizar jugadores restantes.
+             */
+
+            enviarJugadores(
+                codigo
+            );
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   INICIAR
+===================================================== */
+
+server.listen(
+    PORT,
+    () => {
+
+        console.log("");
+        console.log(
+            "======================================"
+        );
+
+        console.log(
+            "       🎮 JUEGO ONLINE"
+        );
+
+        console.log(
+            "======================================"
+        );
+
+        console.log(
+            `Servidor: http://localhost:${PORT}`
+        );
+
+        console.log("");
+
+    }
+);
+
 
