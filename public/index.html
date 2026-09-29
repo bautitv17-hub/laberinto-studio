@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Juego Online</title>
 
 <style>
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -19,7 +22,9 @@ body {
     overflow: hidden;
 }
 
-/* MENÚ */
+/* =========================
+   MENÚ
+========================= */
 
 #menu {
     width: 400px;
@@ -45,7 +50,7 @@ body {
     width: 100%;
     height: 45px;
     margin-top: 10px;
-    border: 0;
+    border: none;
     border-radius: 8px;
     font-size: 16px;
 }
@@ -78,7 +83,9 @@ hr {
     margin: 25px 0;
 }
 
-/* JUEGO */
+/* =========================
+   JUEGO
+========================= */
 
 #juego {
     display: none;
@@ -110,10 +117,13 @@ hr {
     max-width: 100vw;
     max-height: calc(100vh - 70px);
 }
+
 </style>
+
 </head>
 
 <body>
+
 
 <!-- =========================
      MENÚ
@@ -137,12 +147,12 @@ hr {
         id="codigoInput"
         type="text"
         maxlength="5"
-        placeholder="CÓDIGO"
+        placeholder="CÓDIGO DE SALA"
         autocomplete="off"
     >
 
     <button id="unirseSala">
-        UNIRSE
+        UNIRSE A LA SALA
     </button>
 
     <div id="mensaje"></div>
@@ -180,7 +190,7 @@ hr {
 <script>
 
 /* =====================================================
-   SOCKET
+   SOCKET.IO
 ===================================================== */
 
 const socket = io();
@@ -228,44 +238,50 @@ const ctx =
 const CELL = 20;
 
 const MAP = [
-    "#######################################",
-    "#P        #       #       #          #",
-    "#         #       #       #          #",
-    "#         #       #       #          #",
-    "#         ###     #     ###      ######",
-    "#                                   ##",
-    "#                                   ##",
-    "###   #########       #########    ##",
-    "#     #                         #    #",
-    "#     #       ###########       #    #",
-    "#     #       #         #       #    #",
-    "#             #         #            #",
-    "#             #         #            #",
-    "#     #       #         #       #    #",
-    "#     #       ###########       #    #",
-    "#     #                         #    #",
-    "###   #########       #########    ##",
-    "#                                   ##",
-    "#                                   ##",
-    "#         ###     #     ###         ##",
-    "#         #       #       #         ##",
-    "#         #       #       #         ##",
-    "#         #       #       #         ##",
-    "#         #       #       #         ##",
-    "#                                   ##",
-    "#      ######           ######      ##",
-    "#      #                     #      ##",
-    "#      #                     #      ##",
-    "#                                   ##",
-    "#                                   ##",
-    "#######################################"
+
+"#######################################",
+"#P        #       #       #          #",
+"#         #       #       #          #",
+"#         #       #       #          #",
+"#         ###     #     ###      ######",
+"#                                   ##",
+"#                                   ##",
+"###   #########       #########    ##",
+"#     #                         #    #",
+"#     #       ###########       #    #",
+"#     #       #         #       #    #",
+"#             #         #            #",
+"#             #         #            #",
+"#     #       #         #       #    #",
+"#     #       ###########       #    #",
+"#     #                         #    #",
+"###   #########       #########    ##",
+"#                                   ##",
+"#                                   ##",
+"#         ###     #     ###         ##",
+"#         #       #       #         ##",
+"#         #       #       #         ##",
+"#         #       #       #         ##",
+"#         #       #       #         ##",
+"#                                   ##",
+"#      ######           ######      ##",
+"#      #                     #      ##",
+"#      #                     #      ##",
+"#                                   ##",
+"#                                   ##",
+"#######################################"
+
 ];
+
 
 const ROWS = MAP.length;
 const COLS = MAP[0].length;
 
-canvas.width = COLS * CELL;
-canvas.height = ROWS * CELL;
+canvas.width =
+    COLS * CELL;
+
+canvas.height =
+    ROWS * CELL;
 
 
 /* =====================================================
@@ -274,42 +290,67 @@ canvas.height = ROWS * CELL;
 
 let miId = null;
 
-let codigoActual = null;
+let salaActual = null;
 
 let jugadores = [];
 
+
+/* =====================================================
+   JUGADOR
+===================================================== */
+
 const player = {
+
     x: 30,
     y: 30,
+
     radius: 8,
+
     speed: 220,
+
     dx: 0,
     dy: 0
+
 };
 
 
 /* =====================================================
-   BUSCAR POSICIÓN "P"
+   BUSCAR POSICIÓN INICIAL
 ===================================================== */
 
 function buscarInicio() {
 
-    for (let y = 0; y < ROWS; y++) {
+    for (
+        let y = 0;
+        y < ROWS;
+        y++
+    ) {
 
-        for (let x = 0; x < COLS; x++) {
+        for (
+            let x = 0;
+            x < COLS;
+            x++
+        ) {
 
-            if (MAP[y][x] === "P") {
+            if (
+                MAP[y][x] === "P"
+            ) {
 
                 player.x =
-                    x * CELL + CELL / 2;
+                    x * CELL +
+                    CELL / 2;
 
                 player.y =
-                    y * CELL + CELL / 2;
+                    y * CELL +
+                    CELL / 2;
 
                 return;
             }
+
         }
+
     }
+
 }
 
 buscarInicio();
@@ -319,55 +360,76 @@ buscarInicio();
    CONEXIÓN
 ===================================================== */
 
-socket.on("connect", () => {
+socket.on(
+    "connect",
+    () => {
 
-    miId = socket.id;
+        miId =
+            socket.id;
 
-    console.log(
-        "CONECTADO:",
-        miId
-    );
+        console.log(
+            "Conectado:",
+            miId
+        );
 
-});
+    }
+);
 
 
-socket.on("connect_error", () => {
+socket.on(
+    "connect_error",
+    () => {
 
-    mensaje.textContent =
-        "No se pudo conectar al servidor.";
+        mensaje.textContent =
+            "No se pudo conectar al servidor.";
 
-});
+    }
+);
 
 
 /* =====================================================
    CREAR SALA
 ===================================================== */
 
-crearSala.addEventListener("click", () => {
+crearSala.addEventListener(
+    "click",
+    () => {
 
-    mensaje.textContent =
-        "Creando sala...";
+        mensaje.textContent =
+            "Creando sala...";
 
-    socket.emit("crearSala");
+        socket.emit(
+            "crearSala"
+        );
 
-});
+    }
+);
 
 
 /* =====================================================
    UNIRSE
 ===================================================== */
 
-unirseSala.addEventListener("click", unirse);
+unirseSala.addEventListener(
+    "click",
+    unirse
+);
 
-codigoInput.addEventListener("keydown", (event) => {
 
-    if (event.key === "Enter") {
+codigoInput.addEventListener(
+    "keydown",
+    event => {
 
-        unirse();
+        if (
+            event.key === "Enter"
+        ) {
+
+            unirse();
+
+        }
 
     }
-
-});
+);
 
 
 function unirse() {
@@ -378,7 +440,9 @@ function unirse() {
             .toUpperCase();
 
 
-    if (codigo.length !== 5) {
+    if (
+        codigo.length !== 5
+    ) {
 
         mensaje.textContent =
             "El código debe tener 5 caracteres.";
@@ -403,70 +467,84 @@ function unirse() {
    SALA CREADA
 ===================================================== */
 
-socket.on("salaCreada", (datos) => {
+socket.on(
+    "salaCreada",
+    datos => {
 
-    console.log(
-        "SALA CREADA:",
-        datos
-    );
+        console.log(
+            "Sala creada:",
+            datos
+        );
 
 
-    if (!datos || !datos.codigo) {
+        if (
+            !datos ||
+            !datos.codigo
+        ) {
 
-        mensaje.textContent =
-            "Error al crear la sala.";
+            mensaje.textContent =
+                "Error creando la sala.";
 
-        return;
+            return;
+        }
+
+
+        entrarAlJuego(
+            datos.codigo
+        );
+
     }
-
-
-    entrarAlJuego(
-        datos.codigo
-    );
-
-});
+);
 
 
 /* =====================================================
    SALA UNIDA
 ===================================================== */
 
-socket.on("salaUnida", (datos) => {
+socket.on(
+    "salaUnida",
+    datos => {
 
-    console.log(
-        "SALA UNIDA:",
-        datos
-    );
+        console.log(
+            "Sala unida:",
+            datos
+        );
 
 
-    if (!datos || !datos.codigo) {
+        if (
+            !datos ||
+            !datos.codigo
+        ) {
 
-        mensaje.textContent =
-            "Error al entrar.";
+            mensaje.textContent =
+                "Error entrando a la sala.";
 
-        return;
+            return;
+        }
+
+
+        entrarAlJuego(
+            datos.codigo
+        );
+
     }
-
-
-    entrarAlJuego(
-        datos.codigo
-    );
-
-});
+);
 
 
 /* =====================================================
    ENTRAR AL JUEGO
 ===================================================== */
 
-function entrarAlJuego(codigo) {
+function entrarAlJuego(
+    codigo
+) {
 
-    codigoActual =
+    salaActual =
         codigo;
 
 
     codigoSala.textContent =
-        codigoActual;
+        codigo;
 
 
     menu.style.display =
@@ -477,9 +555,30 @@ function entrarAlJuego(codigo) {
         "block";
 
 
-    mensaje.textContent = "";
+    mensaje.textContent =
+        "";
 
 }
+
+
+/* =====================================================
+   ERROR DE SALA
+===================================================== */
+
+socket.on(
+    "errorSala",
+    texto => {
+
+        console.error(
+            texto
+        );
+
+
+        mensaje.textContent =
+            texto;
+
+    }
+);
 
 
 /* =====================================================
@@ -488,23 +587,20 @@ function entrarAlJuego(codigo) {
 
 socket.on(
     "actualizarJugadores",
-    (lista) => {
+    lista => {
 
         console.log(
-            "JUGADORES:",
+            "Jugadores:",
             lista
         );
 
 
-        /*
-         * El servidor SIEMPRE manda
-         * directamente un array.
-         */
-
-        if (!Array.isArray(lista)) {
+        if (
+            !Array.isArray(lista)
+        ) {
 
             console.error(
-                "El servidor envió algo que NO es un array:",
+                "El servidor no envió un array:",
                 lista
             );
 
@@ -520,22 +616,18 @@ socket.on(
             jugadores.length;
 
 
-        /*
-         * Buscar nuestra posición.
-         */
-
         const yo =
             jugadores.find(
                 jugador =>
-                    jugador.id === miId
+                    jugador.id ===
+                    miId
             );
 
 
         if (yo) {
 
             /*
-             * Cuando entramos por primera vez,
-             * sincronizamos nuestra posición.
+             * Sincronización inicial.
              */
 
             if (
@@ -562,40 +654,22 @@ socket.on(
 
 
 /* =====================================================
-   ERRORES
-===================================================== */
-
-socket.on(
-    "errorSala",
-    (texto) => {
-
-        console.error(
-            "ERROR DE SALA:",
-            texto
-        );
-
-        mensaje.textContent =
-            texto;
-
-    }
-);
-
-
-/* =====================================================
    TECLADO
 ===================================================== */
 
 const keys = {
+
     up: false,
     down: false,
     left: false,
     right: false
+
 };
 
 
 document.addEventListener(
     "keydown",
-    (event) => {
+    event => {
 
         const key =
             event.key.toLowerCase();
@@ -649,7 +723,7 @@ document.addEventListener(
 
 document.addEventListener(
     "keyup",
-    (event) => {
+    event => {
 
         const key =
             event.key.toLowerCase();
@@ -711,17 +785,27 @@ function actualizarDireccion() {
     let dy = 0;
 
 
-    if (keys.left) dx--;
-    if (keys.right) dx++;
-    if (keys.up) dy--;
-    if (keys.down) dy++;
+    if (keys.left)
+        dx--;
+
+    if (keys.right)
+        dx++;
+
+    if (keys.up)
+        dy--;
+
+    if (keys.down)
+        dy++;
 
 
     /*
-     * Misma velocidad en diagonal.
+     * Evita que la diagonal sea más rápida.
      */
 
-    if (dx !== 0 && dy !== 0) {
+    if (
+        dx !== 0 &&
+        dy !== 0
+    ) {
 
         const longitud =
             Math.sqrt(
@@ -729,14 +813,21 @@ function actualizarDireccion() {
                 dy * dy
             );
 
-        dx /= longitud;
-        dy /= longitud;
+
+        dx /=
+            longitud;
+
+        dy /=
+            longitud;
 
     }
 
 
-    player.dx = dx;
-    player.dy = dy;
+    player.dx =
+        dx;
+
+    player.dy =
+        dy;
 
 }
 
@@ -745,20 +836,28 @@ function actualizarDireccion() {
    PARED
 ===================================================== */
 
-function isWall(x, y) {
+function esPared(
+    x,
+    y
+) {
 
-    const col =
-        Math.floor(x / CELL);
+    const columna =
+        Math.floor(
+            x / CELL
+        );
 
-    const row =
-        Math.floor(y / CELL);
+
+    const fila =
+        Math.floor(
+            y / CELL
+        );
 
 
     if (
-        col < 0 ||
-        col >= COLS ||
-        row < 0 ||
-        row >= ROWS
+        columna < 0 ||
+        columna >= COLS ||
+        fila < 0 ||
+        fila >= ROWS
     ) {
 
         return true;
@@ -766,7 +865,9 @@ function isWall(x, y) {
     }
 
 
-    return MAP[row][col] === "#";
+    return (
+        MAP[fila][columna] === "#"
+    );
 
 }
 
@@ -775,17 +876,43 @@ function isWall(x, y) {
    COLISIÓN
 ===================================================== */
 
-function puedeMoverse(x, y) {
+function puedeMoverse(
+    x,
+    y
+) {
 
     const r =
         player.radius;
 
 
     return (
-        !isWall(x - r, y - r) &&
-        !isWall(x + r, y - r) &&
-        !isWall(x - r, y + r) &&
-        !isWall(x + r, y + r)
+
+        !esPared(
+            x - r,
+            y - r
+        )
+
+        &&
+
+        !esPared(
+            x + r,
+            y - r
+        )
+
+        &&
+
+        !esPared(
+            x - r,
+            y + r
+        )
+
+        &&
+
+        !esPared(
+            x + r,
+            y + r
+        )
+
     );
 
 }
@@ -798,35 +925,38 @@ function puedeMoverse(x, y) {
 let ultimoEnvio = 0;
 
 
-function moverJugador(delta) {
+function moverJugador(
+    delta
+) {
 
     if (
-        juego.style.display === "none"
+        juego.style.display ===
+        "none"
     ) {
 
         return;
     }
 
 
-    const velocidadX =
+    const movimientoX =
         player.dx *
         player.speed *
         delta;
 
 
-    const velocidadY =
+    const movimientoY =
         player.dy *
         player.speed *
         delta;
 
 
     /*
-     * X
+     * Movimiento horizontal.
      */
 
     const nuevoX =
         player.x +
-        velocidadX;
+        movimientoX;
 
 
     if (
@@ -843,12 +973,12 @@ function moverJugador(delta) {
 
 
     /*
-     * Y
+     * Movimiento vertical.
      */
 
     const nuevoY =
         player.y +
-        velocidadY;
+        movimientoY;
 
 
     if (
@@ -865,8 +995,7 @@ function moverJugador(delta) {
 
 
     /*
-     * Mandamos nuestra posición
-     * unas 30 veces por segundo.
+     * Enviar posición.
      */
 
     const ahora =
@@ -874,7 +1003,8 @@ function moverJugador(delta) {
 
 
     if (
-        ahora - ultimoEnvio > 33
+        ahora - ultimoEnvio >
+        33
     ) {
 
         ultimoEnvio =
@@ -900,18 +1030,29 @@ function moverJugador(delta) {
 
 function dibujarMapa() {
 
-    for (let y = 0; y < ROWS; y++) {
+    for (
+        let y = 0;
+        y < ROWS;
+        y++
+    ) {
 
-        for (let x = 0; x < COLS; x++) {
+        for (
+            let x = 0;
+            x < COLS;
+            x++
+        ) {
 
             const tile =
                 MAP[y][x];
 
 
-            if (tile === "#") {
+            if (
+                tile === "#"
+            ) {
 
                 ctx.fillStyle =
                     "#28105f";
+
 
                 ctx.fillRect(
                     x * CELL,
@@ -924,7 +1065,10 @@ function dibujarMapa() {
                 ctx.strokeStyle =
                     "#713cff";
 
-                ctx.lineWidth = 2;
+
+                ctx.lineWidth =
+                    2;
+
 
                 ctx.strokeRect(
                     x * CELL + 1,
@@ -937,6 +1081,7 @@ function dibujarMapa() {
 
                 ctx.fillStyle =
                     "#000";
+
 
                 ctx.fillRect(
                     x * CELL,
@@ -955,7 +1100,7 @@ function dibujarMapa() {
 
 
 /* =====================================================
-   DIBUJAR JUGADOR
+   DIBUJAR PERSONAJE
 ===================================================== */
 
 function dibujarJugador(
@@ -966,7 +1111,7 @@ function dibujarJugador(
 ) {
 
     /*
-     * Aura
+     * Aura.
      */
 
     ctx.beginPath();
@@ -979,16 +1124,18 @@ function dibujarJugador(
         Math.PI * 2
     );
 
+
     ctx.fillStyle =
         color === "#ffff00"
             ? "rgba(255,255,0,0.15)"
             : "rgba(255,0,0,0.15)";
 
+
     ctx.fill();
 
 
     /*
-     * Círculo
+     * Cuerpo.
      */
 
     ctx.beginPath();
@@ -1001,27 +1148,31 @@ function dibujarJugador(
         Math.PI * 2
     );
 
+
     ctx.fillStyle =
         color;
+
 
     ctx.fill();
 
 
     /*
-     * Borde
+     * Borde.
      */
 
     ctx.strokeStyle =
-        "#ffffff";
+        "#fff";
+
 
     ctx.lineWidth =
         2;
+
 
     ctx.stroke();
 
 
     /*
-     * Brillo
+     * Brillo.
      */
 
     ctx.beginPath();
@@ -1034,24 +1185,29 @@ function dibujarJugador(
         Math.PI * 2
     );
 
+
     ctx.fillStyle =
-        "#ffffff";
+        "#fff";
+
 
     ctx.fill();
 
 
     /*
-     * Nombre
+     * Nombre.
      */
 
     ctx.font =
         "bold 11px Arial";
 
+
     ctx.textAlign =
         "center";
 
+
     ctx.fillStyle =
-        "#ffffff";
+        "#fff";
+
 
     ctx.fillText(
         nombre,
@@ -1068,42 +1224,35 @@ function dibujarJugador(
 
 function dibujarJugadores() {
 
-    if (!Array.isArray(jugadores)) {
+    if (
+        !Array.isArray(jugadores)
+    ) {
 
         return;
-
     }
 
-
-    /*
-     * Jugadores conectados.
-     */
 
     jugadores.forEach(
         (jugador, indice) => {
 
-            if (!jugador) {
+            if (!jugador)
                 return;
-            }
 
 
             if (
                 jugador.id === miId
-            ) {
-
+            )
                 return;
-
-            }
 
 
             if (
-                typeof jugador.x !== "number" ||
-                typeof jugador.y !== "number"
-            ) {
+                typeof jugador.x !==
+                    "number" ||
 
+                typeof jugador.y !==
+                    "number"
+            )
                 return;
-
-            }
 
 
             dibujarJugador(
@@ -1119,7 +1268,7 @@ function dibujarJugadores() {
 
 
     /*
-     * Nosotros.
+     * Nuestro jugador.
      */
 
     dibujarJugador(
@@ -1133,7 +1282,7 @@ function dibujarJugadores() {
 
 
 /* =====================================================
-   DIBUJAR TODO
+   DIBUJAR
 ===================================================== */
 
 function dibujar() {
@@ -1161,24 +1310,33 @@ let ultimoTiempo =
     performance.now();
 
 
-function gameLoop(tiempo) {
+function gameLoop(
+    tiempo
+) {
 
     let delta =
-        (tiempo - ultimoTiempo) / 1000;
+        (tiempo -
+            ultimoTiempo) /
+        1000;
 
 
     ultimoTiempo =
         tiempo;
 
 
-    if (delta > 0.05) {
+    if (
+        delta > 0.05
+    ) {
 
         delta = 0.05;
 
     }
 
 
-    moverJugador(delta);
+    moverJugador(
+        delta
+    );
+
 
     dibujar();
 
