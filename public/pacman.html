@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pac Maze</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    font-family: Arial, sans-serif;
+}
+
+#game {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: #000;
+    overflow: hidden;
+}
+
+#board {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #000;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(0,0,255,.25);
+}
+
+#maze {
+    position: absolute;
+    inset: 0;
+}
+
+/* =========================
+   PAREDES DEL LABERINTO
+========================= */
+
+.wall {
+    position: absolute;
+    background: #0808a8;
+    border: 3px solid #2929ff;
+    border-radius: 6px;
+    box-shadow:
+        inset 0 0 8px rgba(80,80,255,.4),
+        0 0 4px rgba(40,40,255,.7);
+}
+
+/* =========================
+   PUNTOS
+========================= */
+
+.dot {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.power {
+    position: absolute;
+    width: 17px;
+    height: 17px;
+    background: white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: pulse .7s infinite alternate;
+}
+
+@keyframes pulse {
+    from {
+        transform: translate(-50%, -50%) scale(.7);
+    }
+
+    to {
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* =========================
+   PAC-MAN
+========================= */
+
+#player {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    background: #ffd900;
+    border-radius: 50%;
+    z-index: 20;
+}
+
+#player::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 14px solid #000;
+
+    right: -1px;
+    top: 6px;
+
+    animation: mouth .16s infinite alternate;
+}
+
+@keyframes mouth {
+    from {
+        transform: rotate(18deg);
+    }
+
+    to {
+        transform: rotate(-18deg);
+    }
+}
+
+/* =========================
+   FANTASMAS
+========================= */
+
+.ghost {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border-radius: 50% 50% 4px 4px;
+    z-index: 18;
+}
+
+.ghost::before,
+.ghost::after {
+    content: "";
+    position: absolute;
+    width: 7px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+    top: 7px;
+}
+
+.ghost::before {
+    left: 5px;
+}
+
+.ghost::after {
+    right: 5px;
+}
+
+/* =========================
+   HUD
+========================= */
+
+#hud {
+    position: fixed;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+
+    display: flex;
+    gap: 50px;
+
+    z-index: 100;
+
+    text-shadow: 0 2px 5px #000;
+}
+
+#hud span {
+    color: #ffd900;
+}
+
+/* =========================
+   MENSAJE FINAL
+========================= */
+
+#message {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+
+    display: none;
+
+    background: rgba(0,0,0,.94);
+    border: 3px solid #2929ff;
+
+    padding: 30px 45px;
+
+    color: white;
+    text-align: center;
+
+    font-size: 30px;
+    font-weight: bold;
+
+    border-radius: 12px;
+
+    z-index: 500;
+}
+
+#message button {
+    margin-top: 20px;
+
+    padding: 10px 25px;
+
+    background: #ffd900;
+    color: black;
+
+    border: none;
+    border-radius: 6px;
+
+    font-size: 17px;
+    font-weight: bold;
+
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+    <div id="hud">
+        <div>PUNTOS: <span id="score">0</span></div>
+        <div>VIDAS: <span id="lives">3</span></div>
+    </div>
+
+    <div id="board">
+
+        <div id="maze"></div>
+
+        <div id="player"></div>
+
+        <div id="ghosts"></div>
+
+    </div>
+
+    <div id="message">
+        <div id="messageText"></div>
+
+        <button onclick="restartGame()">
+            JUGAR DE NUEVO
+        </button>
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   CONFIGURACIÓN
+========================================= */
+
+const CELL = 24;
+
+const COLS = 28;
+const ROWS = 31;
+
+const BOARD_WIDTH = COLS * CELL;
+const BOARD_HEIGHT = ROWS * CELL;
+
+const PLAYER_SPEED = 125;
+const GHOST_SPEED = 90;
+
+
+/* =========================================
+   ELEMENTOS
+========================================= */
+
+const board = document.getElementById("board");
+const mazeElement = document.getElementById("maze");
+
+const playerElement = document.getElementById("player");
+
+const ghostsElement = document.getElementById("ghosts");
+
+const scoreElement = document.getElementById("score");
+const livesElement = document.getElementById("lives");
+
+const messageElement = document.getElementById("message");
+const messageText = document.getElementById("messageText");
+
+
+board.style.width = BOARD_WIDTH + "px";
+board.style.height = BOARD_HEIGHT + "px";
+
+
+/* =========================================
+   NUEVO MAPA
+   # = PARED
+   . = PUNTO
+   o = POWER
+   espacio = PASILLO
+========================================= */
+
+const MAP = [
+
+"############################",
+
+"#o..........##..........o#",
+
+"#.####.#####.##.#####.####.#",
+
+"#.####.#####.##.#####.####.#",
+
+"#..........................#",
+
+"#.####.##.########.##.####.#",
+
+"#.####.##.########.##.####.#",
+
+"#......##....##....##......#",
+
+"######.#####.##.#####.######",
+
+"######.#####.##.#####.######",
+
+"#...........    ...........#",
+
+"#.####.###        ###.####.#",
+
+"#.####.###  ####  ###.####.#",
+
+"#.####.###  #  #  ###.####.#",
+
+"      .    #    #    .      ",
+
+"#.####.###  #  #  ###.####.#",
+
+"#.####.###  ####  ###.####.#",
+
+"#.####.###        ###.####.#",
+
+"#...........    ...........#",
+
+"######.#####.##.#####.######",
+
+"######.#####.##.#####.######",
+
+"#......##....##....##......#",
+
+"#.####.##.########.##.####.#",
+
+"#.####.##.########.##.####.#",
+
+"#..........................#",
+
+"#.####.#####.##.#####.####.#",
+
+"#o####.#####.##.#####.####o#",
+
+"#............##............#",
+
+"#.########################.#",
+
+"#..........................#",
+
+"############################"
+
+];
+
+
+/* =========================================
+   VARIABLES
+========================================= */
+
+let grid = [];
+
+let dots = [];
+
+let score = 0;
+
+let lives = 3;
+
+let gameRunning = true;
+
+let lastTime = performance.now();
+
+
+/* =========================================
+   JUGADOR
+========================================= */
+
+let player = {
+
+    x: 13 * CELL + 10,
+
+    y: 23 * CELL + 10,
+
+    dirX: 0,
+
+    dirY: 0,
+
+    nextX: 0,
+
+    nextY: 0
+
+};
+
+
+/* =========================================
+   FANTASMAS
+========================================= */
+
+let ghosts = [
+
+    {
+        x: 13 * CELL + 10,
+        y: 14 * CELL + 10,
+        color: "#ff3030",
+        dirX: 1,
+        dirY: 0
+    },
+
+    {
+        x: 14 * CELL + 10,
+        y: 14 * CELL + 10,
+        color: "#ff82c8",
+        dirX: -1,
+        dirY: 0
+    },
+
+    {
+        x: 12 * CELL + 10,
+        y: 14 * CELL + 10,
+        color: "#00eaff",
+        dirX: 0,
+        dirY: -1
+    },
+
+    {
+        x: 15 * CELL + 10,
+        y: 14 * CELL + 10,
+        color: "#ff9b35",
+        dirX: 0,
+        dirY: 1
+    }
+
+];
+
+
+const keys = {};
+
+
+/* =========================================
+   CREAR LABERINTO
+========================================= */
+
+function createMaze() {
+
+    grid = [];
+
+    dots = [];
+
+    mazeElement.innerHTML = "";
+
+
+    for (let y = 0; y < ROWS; y++) {
+
+        grid[y] = [];
+
+        for (let x = 0; x < COLS; x++) {
+
+            let char = MAP[y][x];
+
+            if (char === undefined) {
+
+                char = "#";
+
+            }
+
+
+            if (char === "#") {
+
+                grid[y][x] = 1;
+
+            } else {
+
+                grid[y][x] = 0;
+
+            }
+
+
+            if (char === "." || char === "o") {
+
+                dots.push({
+
+                    x: x,
+
+                    y: y,
+
+                    power: char === "o",
+
+                    collected: false,
+
+                    element: null
+
+                });
+
+            }
+
+        }
+
+    }
+
+
+    /* CREAR PAREDES */
+
+    for (let y = 0; y < ROWS; y++) {
+
+        for (let x = 0; x < COLS; x++) {
+
+            if (grid[y][x] === 1) {
+
+                const wall = document.createElement("div");
+
+                wall.className = "wall";
+
+                wall.style.left = x * CELL + "px";
+
+                wall.style.top = y * CELL + "px";
+
+                wall.style.width = CELL + "px";
+
+                wall.style.height = CELL + "px";
+
+                mazeElement.appendChild(wall);
+
+            }
+
+        }
+
+    }
+
+
+    /* CREAR PUNTOS */
+
+    for (const dot of dots) {
+
+        const element = document.createElement("div");
+
+        element.className = dot.power
+            ? "power"
+            : "dot";
+
+        element.style.left =
+            (dot.x * CELL + CELL / 2) + "px";
+
+        element.style.top =
+            (dot.y * CELL + CELL / 2) + "px";
+
+
+        dot.element = element;
+
+        mazeElement.appendChild(element);
+
+    }
+
+}
+
+
+/* =========================================
+   ACTUALIZAR JUGADOR
+========================================= */
+
+function updatePlayerVisual() {
+
+    playerElement.style.left =
+        player.x + "px";
+
+    playerElement.style.top =
+        player.y + "px";
+
+
+    let rotation = 0;
+
+
+    if (player.dirX < 0)
+        rotation = 180;
+
+    if (player.dirY < 0)
+        rotation = -90;
+
+    if (player.dirY > 0)
+        rotation = 90;
+
+
+    playerElement.style.transform =
+        `rotate(${rotation}deg)`;
+
+}
+
+
+/* =========================================
+   CREAR FANTASMAS
+========================================= */
+
+function createGhosts() {
+
+    ghostsElement.innerHTML = "";
+
+
+    for (const ghost of ghosts) {
+
+        const element =
+            document.createElement("div");
+
+        element.className = "ghost";
+
+        element.style.background =
+            ghost.color;
+
+        ghost.element = element;
+
+        ghostsElement.appendChild(element);
+
+    }
+
+}
+
+
+/* =========================================
+   COLISIONES CON PAREDES
+========================================= */
+
+function canMove(x, y) {
+
+    const size = 27;
+
+
+    const left =
+        Math.floor(x / CELL);
+
+    const right =
+        Math.floor((x + size - 1) / CELL);
+
+    const top =
+        Math.floor(y / CELL);
+
+    const bottom =
+        Math.floor((y + size - 1) / CELL);
+
+
+    for (
+        let yy = top;
+        yy <= bottom;
+        yy++
+    ) {
+
+        for (
+            let xx = left;
+            xx <= right;
+            xx++
+        ) {
+
+            if (
+                yy < 0 ||
+                yy >= ROWS
+            ) {
+
+                return false;
+
+            }
+
+
+            let realX = xx;
+
+
+            /* TÚNEL LATERAL */
+
+            if (realX < 0)
+                realX = COLS - 1;
+
+            if (realX >= COLS)
+                realX = 0;
+
+
+            if (
+                grid[yy][realX] === 1
+            ) {
+
+                return false;
+
+            }
+
+        }
+
+    }
+
+
+    return true;
+
+}
+
+
+/* =========================================
+   MOVIMIENTO DEL JUGADOR
+========================================= */
+
+function updatePlayer(delta) {
+
+    let dx = 0;
+    let dy = 0;
+
+
+    if (
+        keys["ArrowLeft"] ||
+        keys["a"] ||
+        keys["A"]
+    ) {
+
+        dx = -1;
+
+    }
+
+    else if (
+        keys["ArrowRight"] ||
+        keys["d"] ||
+        keys["D"]
+    ) {
+
+        dx = 1;
+
+    }
+
+    else if (
+        keys["ArrowUp"] ||
+        keys["w"] ||
+        keys["W"]
+    ) {
+
+        dy = -1;
+
+    }
+
+    else if (
+        keys["ArrowDown"] ||
+        keys["s"] ||
+        keys["S"]
+    ) {
+
+        dy = 1;
+
+    }
+
+
+    if (dx !== 0 || dy !== 0) {
+
+        player.nextX = dx;
+
+        player.nextY = dy;
+
+    }
+
+
+    const speed =
+        PLAYER_SPEED * delta;
+
+
+    let nextX =
+        player.x +
+        player.nextX * speed;
+
+
+    let nextY =
+        player.y +
+        player.nextY * speed;
+
+
+    if (canMove(nextX, nextY)) {
+
+        player.x = nextX;
+
+        player.y = nextY;
+
+        player.dirX = player.nextX;
+
+        player.dirY = player.nextY;
+
+    }
+
+
+    /* TÚNEL */
+
+    if (player.x < -CELL) {
+
+        player.x = BOARD_WIDTH;
+
+    }
+
+    if (player.x > BOARD_WIDTH) {
+
+        player.x = -CELL;
+
+    }
+
+
+    updatePlayerVisual();
+
+}
+
+
+/* =========================================
+   MOVIMIENTO DE FANTASMAS
+========================================= */
+
+function updateGhosts(delta) {
+
+    for (const ghost of ghosts) {
+
+        const speed =
+            GHOST_SPEED * delta;
+
+
+        const nextX =
+            ghost.x +
+            ghost.dirX * speed;
+
+
+        const nextY =
+            ghost.y +
+            ghost.dirY * speed;
+
+
+        if (canMove(nextX, nextY)) {
+
+            ghost.x = nextX;
+
+            ghost.y = nextY;
+
+        }
+
+        else {
+
+            chooseGhostDirection(ghost);
+
+        }
+
+
+        ghost.element.style.left =
+            ghost.x + "px";
+
+        ghost.element.style.top =
+            ghost.y + "px";
+
+    }
+
+}
+
+
+/* =========================================
+   DIRECCIÓN DE LOS FANTASMAS
+========================================= */
+
+function chooseGhostDirection(ghost) {
+
+    const directions = [
+
+        {x: 1, y: 0},
+
+        {x: -1, y: 0},
+
+        {x: 0, y: 1},
+
+        {x: 0, y: -1}
+
+    ];
+
+
+    let possible =
+        directions.filter(dir => {
+
+            const testX =
+                ghost.x + dir.x * 10;
+
+            const testY =
+                ghost.y + dir.y * 10;
+
+
+            return canMove(
+                testX,
+                testY
+            );
+
+        });
+
+
+    if (possible.length === 0)
+        return;
+
+
+    /* EVITAR VOLVER ATRÁS */
+
+    let filtered =
+        possible.filter(dir => {
+
+            return !(
+                dir.x === -ghost.dirX &&
+                dir.y === -ghost.dirY
+            );
+
+        });
+
+
+    if (filtered.length === 0)
+        filtered = possible;
+
+
+    /* A VECES BUSCAN AL JUGADOR */
+
+    if (Math.random() < .6) {
+
+        filtered.sort((a, b) => {
+
+            const distanceA =
+                Math.hypot(
+                    ghost.x +
+                    a.x * CELL -
+                    player.x,
+
+                    ghost.y +
+                    a.y * CELL -
+                    player.y
+                );
+
+
+            const distanceB =
+                Math.hypot(
+                    ghost.x +
+                    b.x * CELL -
+                    player.x,
+
+                    ghost.y +
+                    b.y * CELL -
+                    player.y
+                );
+
+
+            return distanceA - distanceB;
+
+        });
+
+    }
+
+
+    const selected =
+        filtered[
+            Math.floor(
+                Math.random() *
+                Math.min(
+                    filtered.length,
+                    2
+                )
+            )
+        ];
+
+
+    ghost.dirX = selected.x;
+
+    ghost.dirY = selected.y;
+
+}
+
+
+/* =========================================
+   COMER PUNTOS
+========================================= */
+
+function collectDots() {
+
+    const centerX =
+        player.x + 14;
+
+    const centerY =
+        player.y + 14;
+
+
+    for (const dot of dots) {
+
+        if (dot.collected)
+            continue;
+
+
+        const dotX =
+            dot.x * CELL +
+            CELL / 2;
+
+
+        const dotY =
+            dot.y * CELL +
+            CELL / 2;
+
+
+        const distance =
+            Math.hypot(
+                centerX - dotX,
+                centerY - dotY
+            );
+
+
+        if (distance < 15) {
+
+            dot.collected = true;
+
+            dot.element.style.display =
+                "none";
+
+
+            score +=
+                dot.power ? 50 : 10;
+
+
+            scoreElement.textContent =
+                score;
+
+
+            const remaining =
+                dots.filter(
+                    d => !d.collected
+                ).length;
+
+
+            if (remaining === 0) {
+
+                winGame();
+
+            }
+
+        }
+
+    }
+
+}
+
+
+/* =========================================
+   COLISIÓN CON FANTASMAS
+========================================= */
+
+function checkGhostCollision() {
+
+    for (const ghost of ghosts) {
+
+        const distance =
+            Math.hypot(
+                player.x - ghost.x,
+                player.y - ghost.y
+            );
+
+
+        if (distance < 25) {
+
+            loseLife();
+
+            return;
+
+        }
+
+    }
+
+}
+
+
+/* =========================================
+   PERDER VIDA
+========================================= */
+
+function loseLife() {
+
+    lives--;
+
+    livesElement.textContent =
+        lives;
+
+
+    if (lives <= 0) {
+
+        gameOver();
+
+        return;
+
+    }
+
+
+    resetPositions();
+
+}
+
+
+/* =========================================
+   REINICIAR POSICIONES
+========================================= */
+
+function resetPositions() {
+
+    player.x =
+        13 * CELL + 10;
+
+    player.y =
+        23 * CELL + 10;
+
+
+    player.dirX = 0;
+    player.dirY = 0;
+
+    player.nextX = 0;
+    player.nextY = 0;
+
+
+    ghosts[0].x =
+        13 * CELL + 10;
+
+    ghosts[0].y =
+        14 * CELL + 10;
+
+
+    ghosts[1].x =
+        14 * CELL + 10;
+
+    ghosts[1].y =
+        14 * CELL + 10;
+
+
+    ghosts[2].x =
+        12 * CELL + 10;
+
+    ghosts[2].y =
+        14 * CELL + 10;
+
+
+    ghosts[3].x =
+        15 * CELL + 10;
+
+    ghosts[3].y =
+        14 * CELL + 10;
+
+
+    updatePlayerVisual();
+
+}
+
+
+/* =========================================
+   GANAR
+========================================= */
+
+function winGame() {
+
+    gameRunning = false;
+
+
+    messageText.innerHTML =
+        "🏆 ¡GANASTE!<br><br>" +
+        "Puntuación: " +
+        score;
+
+
+    messageElement.style.display =
+        "block";
+
+}
+
+
+/* =========================================
+   GAME OVER
+========================================= */
+
+function gameOver() {
+
+    gameRunning = false;
+
+
+    messageText.innerHTML =
+        "💀 GAME OVER<br><br>" +
+        "Puntuación: " +
+        score;
+
+
+    messageElement.style.display =
+        "block";
+
+}
+
+
+/* =========================================
+   REINICIAR
+========================================= */
+
+function restartGame() {
+
+    score = 0;
+
+    lives = 3;
+
+
+    scoreElement.textContent =
+        "0";
+
+    livesElement.textContent =
+        "3";
+
+
+    messageElement.style.display =
+        "none";
+
+
+    resetPositions();
+
+    createMaze();
+
+    createGhosts();
+
+
+    gameRunning = true;
+
+    lastTime =
+        performance.now();
+
+}
+
+
+/* =========================================
+   TECLADO
+========================================= */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        keys[event.key] = true;
+
+
+        if (
+            event.key.startsWith("Arrow")
+        ) {
+
+            event.preventDefault();
+
+        }
+
+    }
+);
+
+
+document.addEventListener(
+    "keyup",
+    event => {
+
+        keys[event.key] = false;
+
+    }
+);
+
+
+window.addEventListener(
+    "blur",
+    () => {
+
+        for (const key in keys) {
+
+            keys[key] = false;
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   GAME LOOP
+========================================= */
+
+function gameLoop(currentTime) {
+
+    let delta =
+        (currentTime - lastTime) / 1000;
+
+
+    delta =
+        Math.min(delta, .05);
+
+
+    lastTime =
+        currentTime;
+
+
+    if (gameRunning) {
+
+        updatePlayer(delta);
+
+        updateGhosts(delta);
+
+        collectDots();
+
+        checkGhostCollision();
+
+    }
+
+
+    requestAnimationFrame(gameLoop);
+
+}
+
+
+/* =========================================
+   INICIO
+========================================= */
+
+createMaze();
+
+createGhosts();
+
+updatePlayerVisual();
+
+requestAnimationFrame(gameLoop);
+
+</script>
+
+</body>
+</html>
