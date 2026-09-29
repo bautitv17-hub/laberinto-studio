@@ -1,19 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Juego Online</title>
 
 <style>
-
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
 body {
@@ -23,98 +19,87 @@ body {
     overflow: hidden;
 }
 
-/* =========================
-   MENÚ
-========================= */
+/* MENÚ */
 
 #menu {
     width: 400px;
     max-width: 90%;
-    margin: 60px auto;
-    background: #2c3038;
+    margin: 80px auto;
     padding: 30px;
+    background: #222;
     border-radius: 15px;
     text-align: center;
 }
 
 #menu h1 {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 #menu h2 {
-    margin-top: 10px;
+    margin-top: 15px;
+    margin-bottom: 10px;
 }
 
-input,
-button {
+#menu input,
+#menu button {
     width: 100%;
-    padding: 12px;
+    height: 45px;
     margin-top: 10px;
-    border: none;
+    border: 0;
     border-radius: 8px;
     font-size: 16px;
 }
 
-input {
-    outline: none;
+#menu input {
+    padding: 10px;
+    text-align: center;
     text-transform: uppercase;
 }
 
-button {
+#menu button {
     background: #4caf50;
     color: white;
     cursor: pointer;
 }
 
-button:hover {
-    background: #45a049;
-}
-
-hr {
-    margin: 25px 0;
-    border: none;
-    border-top: 1px solid #555;
+#menu button:hover {
+    background: #43a047;
 }
 
 #mensaje {
-    color: #ffd166;
     margin-top: 15px;
+    min-height: 20px;
+    color: #ffd166;
 }
 
-/* =========================
-   JUEGO
-========================= */
+hr {
+    border: 0;
+    border-top: 1px solid #555;
+    margin: 25px 0;
+}
+
+/* JUEGO */
 
 #juego {
     display: none;
     width: 100vw;
     height: 100vh;
-    text-align: center;
 }
 
 #informacion {
-    height: 75px;
-    padding: 8px;
+    height: 70px;
+    text-align: center;
+    padding-top: 8px;
 }
 
 #informacion h2 {
     margin-bottom: 5px;
 }
 
-#informacion p {
-    display: inline-block;
-    margin: 0 10px;
-}
-
 #codigoSala {
-    font-size: 25px;
-    font-weight: bold;
+    color: #00ff88;
     letter-spacing: 4px;
 }
-
-/* =========================
-   CANVAS
-========================= */
 
 #cancha {
     display: block;
@@ -123,29 +108,25 @@ hr {
     image-rendering: pixelated;
 
     max-width: 100vw;
-    max-height: calc(100vh - 75px);
+    max-height: calc(100vh - 70px);
 }
-
 </style>
-
 </head>
-
 
 <body>
 
-
-<!-- =====================================================
+<!-- =========================
      MENÚ
-===================================================== -->
+========================= -->
 
 <div id="menu">
 
     <h1>🎮 Juego Online</h1>
 
-    <h2>Crear sala</h2>
+    <h2>Crear una sala</h2>
 
     <button id="crearSala">
-        Crear sala
+        CREAR SALA
     </button>
 
     <hr>
@@ -154,41 +135,38 @@ hr {
 
     <input
         id="codigoInput"
+        type="text"
         maxlength="5"
-        placeholder="Código de sala"
+        placeholder="CÓDIGO"
         autocomplete="off"
     >
 
     <button id="unirseSala">
-        Unirse a sala
+        UNIRSE
     </button>
 
-    <p id="mensaje"></p>
+    <div id="mensaje"></div>
 
 </div>
 
 
-<!-- =====================================================
+<!-- =========================
      JUEGO
-===================================================== -->
+========================= -->
 
 <div id="juego">
 
     <div id="informacion">
 
         <h2>
-            Sala:
-            <span id="codigoSala"></span>
+            SALA:
+            <span id="codigoSala">-----</span>
         </h2>
 
-        <p>
+        <div>
             Jugadores:
             <span id="cantidadJugadores">0</span>/4
-        </p>
-
-        <p>
-            WASD / Flechas para moverte
-        </p>
+        </div>
 
     </div>
 
@@ -198,7 +176,6 @@ hr {
 
 
 <script src="/socket.io/socket.io.js"></script>
-
 
 <script>
 
@@ -228,19 +205,14 @@ const unirseSala =
 const codigoInput =
     document.getElementById("codigoInput");
 
+const mensaje =
+    document.getElementById("mensaje");
+
 const codigoSala =
     document.getElementById("codigoSala");
 
 const cantidadJugadores =
     document.getElementById("cantidadJugadores");
-
-const mensaje =
-    document.getElementById("mensaje");
-
-
-/* =====================================================
-   CANVAS
-===================================================== */
 
 const canvas =
     document.getElementById("cancha");
@@ -256,97 +228,75 @@ const ctx =
 const CELL = 20;
 
 const MAP = [
-
-"#######################################",
-"#P        #       #       #          #",
-"#         #       #       #          #",
-"#         #       #       #          #",
-"#         ###     #     ###      ######",
-"#                                   ##",
-"#                                   ##",
-"###   #########       #########    ##",
-"#     #                         #    #",
-"#     #       ###########       #    #",
-"#     #       #         #       #    #",
-"#             #         #            #",
-"#             #         #            #",
-"#     #       #         #       #    #",
-"#     #       ###########       #    #",
-"#     #                         #    #",
-"###   #########       #########    ##",
-"#                                   ##",
-"#                                   ##",
-"#         ###     #     ###         ##",
-"#         #       #       #         ##",
-"#         #       #       #         ##",
-"#         #       #       #         ##",
-"#         #       #       #         ##",
-"#                                   ##",
-"#      ######           ######      ##",
-"#      #                     #      ##",
-"#      #                     #      ##",
-"#                                   ##",
-"#                                   ##",
-"#######################################"
-
+    "#######################################",
+    "#P        #       #       #          #",
+    "#         #       #       #          #",
+    "#         #       #       #          #",
+    "#         ###     #     ###      ######",
+    "#                                   ##",
+    "#                                   ##",
+    "###   #########       #########    ##",
+    "#     #                         #    #",
+    "#     #       ###########       #    #",
+    "#     #       #         #       #    #",
+    "#             #         #            #",
+    "#             #         #            #",
+    "#     #       #         #       #    #",
+    "#     #       ###########       #    #",
+    "#     #                         #    #",
+    "###   #########       #########    ##",
+    "#                                   ##",
+    "#                                   ##",
+    "#         ###     #     ###         ##",
+    "#         #       #       #         ##",
+    "#         #       #       #         ##",
+    "#         #       #       #         ##",
+    "#         #       #       #         ##",
+    "#                                   ##",
+    "#      ######           ######      ##",
+    "#      #                     #      ##",
+    "#      #                     #      ##",
+    "#                                   ##",
+    "#                                   ##",
+    "#######################################"
 ];
-
 
 const ROWS = MAP.length;
 const COLS = MAP[0].length;
-
 
 canvas.width = COLS * CELL;
 canvas.height = ROWS * CELL;
 
 
 /* =====================================================
-   JUGADOR LOCAL
+   VARIABLES
 ===================================================== */
 
 let miId = null;
 
+let codigoActual = null;
+
+let jugadores = [];
+
 const player = {
-
-    x: 0,
-    y: 0,
-
+    x: 30,
+    y: 30,
     radius: 8,
-
     speed: 220,
-
-    directionX: 0,
-    directionY: 0
-
+    dx: 0,
+    dy: 0
 };
 
 
 /* =====================================================
-   JUGADORES ONLINE
-
-   SIEMPRE SERÁ UN ARRAY
+   BUSCAR POSICIÓN "P"
 ===================================================== */
 
-let jugadores = [];
+function buscarInicio() {
 
+    for (let y = 0; y < ROWS; y++) {
 
-/* =====================================================
-   POSICIÓN INICIAL
-===================================================== */
-
-function findPlayerStart() {
-
-    for (
-        let y = 0;
-        y < ROWS;
-        y++
-    ) {
-
-        for (
-            let x = 0;
-            x < COLS;
-            x++
-        ) {
+        for (let x = 0; x < COLS; x++) {
 
             if (MAP[y][x] === "P") {
 
@@ -357,16 +307,12 @@ function findPlayerStart() {
                     y * CELL + CELL / 2;
 
                 return;
-
             }
-
         }
-
     }
-
 }
 
-findPlayerStart();
+buscarInicio();
 
 
 /* =====================================================
@@ -378,19 +324,14 @@ socket.on("connect", () => {
     miId = socket.id;
 
     console.log(
-        "Conectado al servidor:",
+        "CONECTADO:",
         miId
     );
 
 });
 
 
-socket.on("connect_error", (error) => {
-
-    console.error(
-        "Error de conexión:",
-        error
-    );
+socket.on("connect_error", () => {
 
     mensaje.textContent =
         "No se pudo conectar al servidor.";
@@ -402,108 +343,138 @@ socket.on("connect_error", (error) => {
    CREAR SALA
 ===================================================== */
 
-crearSala.addEventListener(
-    "click",
-    () => {
+crearSala.addEventListener("click", () => {
 
-        mensaje.textContent =
-            "Creando sala...";
+    mensaje.textContent =
+        "Creando sala...";
 
-        socket.emit(
-            "crearSala"
-        );
+    socket.emit("crearSala");
 
-    }
-);
+});
 
 
 /* =====================================================
-   UNIRSE A SALA
+   UNIRSE
 ===================================================== */
 
-unirseSala.addEventListener(
-    "click",
-    () => {
+unirseSala.addEventListener("click", unirse);
 
-        const codigo =
-            codigoInput.value
-                .trim()
-                .toUpperCase();
+codigoInput.addEventListener("keydown", (event) => {
 
+    if (event.key === "Enter") {
 
-        if (codigo === "") {
-
-            mensaje.textContent =
-                "Escribí un código.";
-
-            return;
-
-        }
-
-
-        mensaje.textContent =
-            "Conectando...";
-
-
-        socket.emit(
-            "unirseSala",
-            codigo
-        );
+        unirse();
 
     }
-);
+
+});
+
+
+function unirse() {
+
+    const codigo =
+        codigoInput.value
+            .trim()
+            .toUpperCase();
+
+
+    if (codigo.length !== 5) {
+
+        mensaje.textContent =
+            "El código debe tener 5 caracteres.";
+
+        return;
+    }
+
+
+    mensaje.textContent =
+        "Entrando a la sala...";
+
+
+    socket.emit(
+        "unirseSala",
+        codigo
+    );
+
+}
+
+
+/* =====================================================
+   SALA CREADA
+===================================================== */
+
+socket.on("salaCreada", (datos) => {
+
+    console.log(
+        "SALA CREADA:",
+        datos
+    );
+
+
+    if (!datos || !datos.codigo) {
+
+        mensaje.textContent =
+            "Error al crear la sala.";
+
+        return;
+    }
+
+
+    entrarAlJuego(
+        datos.codigo
+    );
+
+});
+
+
+/* =====================================================
+   SALA UNIDA
+===================================================== */
+
+socket.on("salaUnida", (datos) => {
+
+    console.log(
+        "SALA UNIDA:",
+        datos
+    );
+
+
+    if (!datos || !datos.codigo) {
+
+        mensaje.textContent =
+            "Error al entrar.";
+
+        return;
+    }
+
+
+    entrarAlJuego(
+        datos.codigo
+    );
+
+});
 
 
 /* =====================================================
    ENTRAR AL JUEGO
 ===================================================== */
 
-socket.on(
-    "salaCreada",
-    (datos) => {
+function entrarAlJuego(codigo) {
 
-        entrarAlJuego(datos);
-
-    }
-);
+    codigoActual =
+        codigo;
 
 
-socket.on(
-    "salaUnida",
-    (datos) => {
+    codigoSala.textContent =
+        codigoActual;
 
-        entrarAlJuego(datos);
-
-    }
-);
-
-
-function entrarAlJuego(datos) {
 
     menu.style.display =
         "none";
 
+
     juego.style.display =
         "block";
-
-
-    if (datos && datos.codigo) {
-
-        codigoSala.textContent =
-            datos.codigo;
-
-    }
-
-
-    if (
-        datos &&
-        typeof datos.jugadores === "number"
-    ) {
-
-        cantidadJugadores.textContent =
-            datos.jugadores;
-
-    }
 
 
     mensaje.textContent = "";
@@ -513,85 +484,49 @@ function entrarAlJuego(datos) {
 
 /* =====================================================
    ACTUALIZAR JUGADORES
-
-   ESTA PARTE ES LA QUE EVITA
-   EL ERROR .find / .forEach
 ===================================================== */
 
 socket.on(
     "actualizarJugadores",
-    (listaRecibida) => {
+    (lista) => {
 
         console.log(
-            "Jugadores recibidos:",
-            listaRecibida
+            "JUGADORES:",
+            lista
         );
 
 
         /*
-         * Asegurarnos de que sea un array.
+         * El servidor SIEMPRE manda
+         * directamente un array.
          */
 
-        if (
-            Array.isArray(listaRecibida)
-        ) {
+        if (!Array.isArray(lista)) {
 
-            jugadores =
-                listaRecibida;
-
-        }
-
-        /*
-         * Por seguridad, si el servidor
-         * manda un objeto con una propiedad
-         * jugadores, también lo aceptamos.
-         */
-
-        else if (
-            listaRecibida &&
-            Array.isArray(
-                listaRecibida.jugadores
-            )
-        ) {
-
-            jugadores =
-                listaRecibida.jugadores;
-
-        }
-
-        /*
-         * Si llega cualquier otra cosa,
-         * usamos un array vacío.
-         */
-
-        else {
-
-            console.warn(
-                "Formato incorrecto recibido:",
-                listaRecibida
+            console.error(
+                "El servidor envió algo que NO es un array:",
+                lista
             );
 
-            jugadores = [];
-
+            return;
         }
 
 
-        /*
-         * Actualizar contador.
-         */
+        jugadores =
+            lista;
+
 
         cantidadJugadores.textContent =
             jugadores.length;
 
 
         /*
-         * Buscar nuestro jugador.
+         * Buscar nuestra posición.
          */
 
         const yo =
             jugadores.find(
                 jugador =>
-                    jugador &&
                     jugador.id === miId
             );
 
@@ -599,43 +534,24 @@ socket.on(
         if (yo) {
 
             /*
-             * Comprobar que tenga coordenadas.
+             * Cuando entramos por primera vez,
+             * sincronizamos nuestra posición.
              */
 
             if (
-                typeof yo.x === "number" &&
-                typeof yo.y === "number"
+                Math.abs(
+                    player.x - yo.x
+                ) > 100 ||
+                Math.abs(
+                    player.y - yo.y
+                ) > 100
             ) {
 
-                const diferenciaX =
-                    Math.abs(
-                        yo.x - player.x
-                    );
+                player.x =
+                    yo.x;
 
-
-                const diferenciaY =
-                    Math.abs(
-                        yo.y - player.y
-                    );
-
-
-                /*
-                 * Solo corregir si hay una
-                 * diferencia grande.
-                 */
-
-                if (
-                    diferenciaX > 80 ||
-                    diferenciaY > 80
-                ) {
-
-                    player.x =
-                        yo.x;
-
-                    player.y =
-                        yo.y;
-
-                }
+                player.y =
+                    yo.y;
 
             }
 
@@ -646,12 +562,17 @@ socket.on(
 
 
 /* =====================================================
-   ERROR DE SALA
+   ERRORES
 ===================================================== */
 
 socket.on(
     "errorSala",
     (texto) => {
+
+        console.error(
+            "ERROR DE SALA:",
+            texto
+        );
 
         mensaje.textContent =
             texto;
@@ -665,12 +586,10 @@ socket.on(
 ===================================================== */
 
 const keys = {
-
     up: false,
     down: false,
     left: false,
     right: false
-
 };
 
 
@@ -680,22 +599,6 @@ document.addEventListener(
 
         const key =
             event.key.toLowerCase();
-
-
-        if (
-            key === "w" ||
-            key === "a" ||
-            key === "s" ||
-            key === "d" ||
-            key === "arrowup" ||
-            key === "arrowdown" ||
-            key === "arrowleft" ||
-            key === "arrowright"
-        ) {
-
-            event.preventDefault();
-
-        }
 
 
         if (
@@ -738,7 +641,7 @@ document.addEventListener(
         }
 
 
-        updateDirection();
+        actualizarDireccion();
 
     }
 );
@@ -792,7 +695,7 @@ document.addEventListener(
         }
 
 
-        updateDirection();
+        actualizarDireccion();
 
     }
 );
@@ -802,83 +705,60 @@ document.addEventListener(
    DIRECCIÓN
 ===================================================== */
 
-function updateDirection() {
+function actualizarDireccion() {
 
     let dx = 0;
     let dy = 0;
 
 
-    if (keys.left) {
-        dx--;
-    }
-
-    if (keys.right) {
-        dx++;
-    }
-
-    if (keys.up) {
-        dy--;
-    }
-
-    if (keys.down) {
-        dy++;
-    }
+    if (keys.left) dx--;
+    if (keys.right) dx++;
+    if (keys.up) dy--;
+    if (keys.down) dy++;
 
 
     /*
-     * Normalizar diagonal.
+     * Misma velocidad en diagonal.
      */
 
-    if (
-        dx !== 0 &&
-        dy !== 0
-    ) {
+    if (dx !== 0 && dy !== 0) {
 
-        const length =
+        const longitud =
             Math.sqrt(
                 dx * dx +
                 dy * dy
             );
 
-
-        dx /= length;
-        dy /= length;
+        dx /= longitud;
+        dy /= longitud;
 
     }
 
 
-    player.directionX =
-        dx;
-
-    player.directionY =
-        dy;
+    player.dx = dx;
+    player.dy = dy;
 
 }
 
 
 /* =====================================================
-   DETECTAR PARED
+   PARED
 ===================================================== */
 
 function isWall(x, y) {
 
     const col =
-        Math.floor(
-            x / CELL
-        );
-
+        Math.floor(x / CELL);
 
     const row =
-        Math.floor(
-            y / CELL
-        );
+        Math.floor(y / CELL);
 
 
     if (
-        row < 0 ||
-        row >= ROWS ||
         col < 0 ||
-        col >= COLS
+        col >= COLS ||
+        row < 0 ||
+        row >= ROWS
     ) {
 
         return true;
@@ -892,43 +772,20 @@ function isWall(x, y) {
 
 
 /* =====================================================
-   COLISIONES
+   COLISIÓN
 ===================================================== */
 
-function canMove(x, y) {
+function puedeMoverse(x, y) {
 
     const r =
         player.radius;
 
 
     return (
-
-        !isWall(
-            x - r,
-            y - r
-        )
-
-        &&
-
-        !isWall(
-            x + r,
-            y - r
-        )
-
-        &&
-
-        !isWall(
-            x - r,
-            y + r
-        )
-
-        &&
-
-        !isWall(
-            x + r,
-            y + r
-        )
-
+        !isWall(x - r, y - r) &&
+        !isWall(x + r, y - r) &&
+        !isWall(x - r, y + r) &&
+        !isWall(x + r, y + r)
     );
 
 }
@@ -938,74 +795,91 @@ function canMove(x, y) {
    MOVIMIENTO
 ===================================================== */
 
-function updatePlayer(delta) {
+let ultimoEnvio = 0;
+
+
+function moverJugador(delta) {
 
     if (
         juego.style.display === "none"
     ) {
 
         return;
-
     }
 
 
-    const moveX =
-        player.directionX *
+    const velocidadX =
+        player.dx *
         player.speed *
         delta;
 
 
-    const moveY =
-        player.directionY *
+    const velocidadY =
+        player.dy *
         player.speed *
         delta;
 
 
-    const nextX =
+    /*
+     * X
+     */
+
+    const nuevoX =
         player.x +
-        moveX;
+        velocidadX;
 
 
     if (
-        canMove(
-            nextX,
+        puedeMoverse(
+            nuevoX,
             player.y
         )
     ) {
 
         player.x =
-            nextX;
-
-    }
-
-
-    const nextY =
-        player.y +
-        moveY;
-
-
-    if (
-        canMove(
-            player.x,
-            nextY
-        )
-    ) {
-
-        player.y =
-            nextY;
+            nuevoX;
 
     }
 
 
     /*
-     * Mandar posición solamente
-     * cuando nos estamos moviendo.
+     * Y
      */
 
+    const nuevoY =
+        player.y +
+        velocidadY;
+
+
     if (
-        player.directionX !== 0 ||
-        player.directionY !== 0
+        puedeMoverse(
+            player.x,
+            nuevoY
+        )
     ) {
+
+        player.y =
+            nuevoY;
+
+    }
+
+
+    /*
+     * Mandamos nuestra posición
+     * unas 30 veces por segundo.
+     */
+
+    const ahora =
+        performance.now();
+
+
+    if (
+        ahora - ultimoEnvio > 33
+    ) {
+
+        ultimoEnvio =
+            ahora;
+
 
         socket.emit(
             "moverJugador",
@@ -1024,19 +898,11 @@ function updatePlayer(delta) {
    DIBUJAR MAPA
 ===================================================== */
 
-function drawMap() {
+function dibujarMapa() {
 
-    for (
-        let y = 0;
-        y < ROWS;
-        y++
-    ) {
+    for (let y = 0; y < ROWS; y++) {
 
-        for (
-            let x = 0;
-            x < COLS;
-            x++
-        ) {
+        for (let x = 0; x < COLS; x++) {
 
             const tile =
                 MAP[y][x];
@@ -1046,7 +912,6 @@ function drawMap() {
 
                 ctx.fillStyle =
                     "#28105f";
-
 
                 ctx.fillRect(
                     x * CELL,
@@ -1059,9 +924,7 @@ function drawMap() {
                 ctx.strokeStyle =
                     "#713cff";
 
-
                 ctx.lineWidth = 2;
-
 
                 ctx.strokeRect(
                     x * CELL + 1,
@@ -1070,13 +933,10 @@ function drawMap() {
                     CELL - 2
                 );
 
-            }
-
-            else {
+            } else {
 
                 ctx.fillStyle =
                     "#000";
-
 
                 ctx.fillRect(
                     x * CELL,
@@ -1098,7 +958,7 @@ function drawMap() {
    DIBUJAR JUGADOR
 ===================================================== */
 
-function drawPlayer(
+function dibujarJugador(
     x,
     y,
     color,
@@ -1128,7 +988,7 @@ function drawPlayer(
 
 
     /*
-     * Cuerpo
+     * Círculo
      */
 
     ctx.beginPath();
@@ -1149,23 +1009,13 @@ function drawPlayer(
 
     /*
      * Borde
-
      */
 
-    ctx.beginPath();
-
-    ctx.arc(
-        x,
-        y,
-        8,
-        0,
-        Math.PI * 2
-    );
-
     ctx.strokeStyle =
-        "#fff";
+        "#ffffff";
 
-    ctx.lineWidth = 2;
+    ctx.lineWidth =
+        2;
 
     ctx.stroke();
 
@@ -1177,15 +1027,15 @@ function drawPlayer(
     ctx.beginPath();
 
     ctx.arc(
-        x - 2.5,
-        y - 2.5,
+        x - 2,
+        y - 2,
         2,
         0,
         Math.PI * 2
     );
 
     ctx.fillStyle =
-        "#fff";
+        "#ffffff";
 
     ctx.fill();
 
@@ -1201,7 +1051,7 @@ function drawPlayer(
         "center";
 
     ctx.fillStyle =
-        "#fff";
+        "#ffffff";
 
     ctx.fillText(
         nombre,
@@ -1216,15 +1066,9 @@ function drawPlayer(
    DIBUJAR JUGADORES
 ===================================================== */
 
-function drawPlayers() {
+function dibujarJugadores() {
 
-    /*
-     * Seguridad.
-     */
-
-    if (
-        !Array.isArray(jugadores)
-    ) {
+    if (!Array.isArray(jugadores)) {
 
         return;
 
@@ -1232,7 +1076,7 @@ function drawPlayers() {
 
 
     /*
-     * Jugadores remotos.
+     * Jugadores conectados.
      */
 
     jugadores.forEach(
@@ -1262,10 +1106,10 @@ function drawPlayers() {
             }
 
 
-            drawPlayer(
+            dibujarJugador(
                 jugador.x,
                 jugador.y,
-                "#e74c3c",
+                "#ff3333",
                 "JUGADOR " +
                 (indice + 1)
             );
@@ -1275,10 +1119,10 @@ function drawPlayers() {
 
 
     /*
-     * Nuestro jugador.
+     * Nosotros.
      */
 
-    drawPlayer(
+    dibujarJugador(
         player.x,
         player.y,
         "#ffff00",
@@ -1292,7 +1136,7 @@ function drawPlayers() {
    DIBUJAR TODO
 ===================================================== */
 
-function draw() {
+function dibujar() {
 
     ctx.clearRect(
         0,
@@ -1302,9 +1146,9 @@ function draw() {
     );
 
 
-    drawMap();
+    dibujarMapa();
 
-    drawPlayers();
+    dibujarJugadores();
 
 }
 
@@ -1313,19 +1157,18 @@ function draw() {
    GAME LOOP
 ===================================================== */
 
-let lastTime =
+let ultimoTiempo =
     performance.now();
 
 
-function gameLoop(currentTime) {
+function gameLoop(tiempo) {
 
     let delta =
-        (currentTime - lastTime) /
-        1000;
+        (tiempo - ultimoTiempo) / 1000;
 
 
-    lastTime =
-        currentTime;
+    ultimoTiempo =
+        tiempo;
 
 
     if (delta > 0.05) {
@@ -1335,9 +1178,9 @@ function gameLoop(currentTime) {
     }
 
 
-    updatePlayer(delta);
+    moverJugador(delta);
 
-    draw();
+    dibujar();
 
 
     requestAnimationFrame(
@@ -1354,5 +1197,4 @@ requestAnimationFrame(
 </script>
 
 </body>
-
 </html>
