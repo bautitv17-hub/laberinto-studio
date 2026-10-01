@@ -115,6 +115,44 @@
 
 
         /* =====================================================
+           BOTÓN DE MÚSICA - SOLO MENÚ
+        ===================================================== */
+
+        #botonMusica {
+            position: absolute;
+
+            top: 20px;
+            right: 20px;
+
+            z-index: 100;
+
+            width: 50px;
+            height: 50px;
+
+            padding: 0;
+
+            border-radius: 50%;
+
+            background: rgba(0, 0, 0, 0.85);
+
+            border: 2px solid #713cff;
+
+            font-size: 22px;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            cursor: pointer;
+        }
+
+
+        #botonMusica:hover {
+            background: #28105f;
+        }
+
+
+        /* =====================================================
            JUEGO
         ===================================================== */
 
@@ -172,44 +210,6 @@
 
 
         /* =====================================================
-           BOTÓN DE MÚSICA
-        ===================================================== */
-
-        #botonMusica {
-            position: absolute;
-
-            top: 15px;
-            right: 15px;
-
-            z-index: 50;
-
-            width: 48px;
-            height: 48px;
-
-            padding: 0;
-
-            border-radius: 50%;
-
-            background: rgba(0, 0, 0, 0.85);
-
-            border: 2px solid #713cff;
-
-            font-size: 21px;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            cursor: pointer;
-        }
-
-
-        #botonMusica:hover {
-            background: #28105f;
-        }
-
-
-        /* =====================================================
            CANVAS
         ===================================================== */
 
@@ -233,11 +233,11 @@
 
 
     <!-- =====================================================
-         MÚSICA
+         MÚSICA DEL MENÚ
     ===================================================== -->
 
     <audio
-        id="musicaJuego"
+        id="musicaMenu"
         src="musica.mp3"
         loop
         preload="auto">
@@ -246,7 +246,7 @@
 
 
     <!-- =====================================================
-         MENU
+         MENU PRINCIPAL
     ===================================================== -->
 
     <div id="menu">
@@ -283,6 +283,19 @@
 
 
     <!-- =====================================================
+         BOTÓN DE MÚSICA
+         SOLO APARECE EN EL MENÚ
+    ===================================================== -->
+
+    <button
+        id="botonMusica"
+        title="Activar/desactivar música">
+        🔊
+    </button>
+
+
+
+    <!-- =====================================================
          JUEGO
     ===================================================== -->
 
@@ -312,15 +325,6 @@
             </div>
 
         </div>
-
-
-        <!-- BOTÓN MÚSICA -->
-
-        <button
-            id="botonMusica"
-            title="Activar/desactivar música">
-            🔊
-        </button>
 
 
         <canvas id="cancha"></canvas>
@@ -386,11 +390,11 @@
 
 
         // =====================================================
-        // MÚSICA
+        // MÚSICA DEL MENÚ
         // =====================================================
 
-        const musicaJuego =
-            document.getElementById("musicaJuego");
+        const musicaMenu =
+            document.getElementById("musicaMenu");
 
         const botonMusica =
             document.getElementById("botonMusica");
@@ -399,8 +403,19 @@
         let musicaActiva = true;
 
 
-        musicaJuego.volume = 0.28;
+        musicaMenu.volume = 0.28;
 
+
+        /*
+            Inicia la música.
+
+            Los navegadores normalmente bloquean el
+            autoplay hasta que el usuario interactúa
+            con la página.
+
+            Por eso se intenta iniciar cuando el usuario
+            pulsa CREAR SALA o UNIRSE A LA SALA.
+        */
 
         function iniciarMusica() {
 
@@ -409,68 +424,43 @@
             }
 
 
-            musicaJuego.volume = 0.28;
+            musicaMenu.volume = 0.28;
 
 
-            const promesa =
-                musicaJuego.play();
-
-
-            if (promesa !== undefined) {
-
-                promesa
-                    .then(() => {
-
-                        musicaActiva = true;
-
-                        botonMusica.textContent =
-                            "🔊";
-
-                    })
-                    .catch(() => {
-
-                        /*
-                            Algunos navegadores bloquean
-                            el autoplay.
-
-                            Si ocurre, esperamos al próximo
-                            clic del usuario.
-                        */
-
-                        console.log(
-                            "El navegador bloqueó el autoplay."
-                        );
-
-                    });
-
-            }
-
-        }
-
-
-        function reintentarMusica() {
-
-            if (
-                juego.style.display !== "flex" ||
-                !musicaActiva
-            ) {
-
-                return;
-
-            }
-
-
-            musicaJuego.play()
+            musicaMenu.play()
                 .then(() => {
 
                     botonMusica.textContent =
                         "🔊";
 
                 })
-                .catch(() => {});
+                .catch(() => {
+
+                    console.log(
+                        "El navegador bloqueó el inicio automático de la música."
+                    );
+
+                });
 
         }
 
+
+        // =====================================================
+        // DETENER MÚSICA AL ENTRAR AL JUEGO
+        // =====================================================
+
+        function detenerMusica() {
+
+            musicaMenu.pause();
+
+            musicaMenu.currentTime = 0;
+
+        }
+
+
+        // =====================================================
+        // BOTÓN MÚSICA
+        // =====================================================
 
         botonMusica.addEventListener(
             "click",
@@ -479,14 +469,15 @@
                 event.stopPropagation();
 
 
-                if (musicaJuego.paused) {
+                if (musicaMenu.paused) {
 
                     musicaActiva = true;
 
-                    musicaJuego.volume =
+                    musicaMenu.volume =
                         0.28;
 
-                    musicaJuego.play()
+
+                    musicaMenu.play()
                         .then(() => {
 
                             botonMusica.textContent =
@@ -506,40 +497,11 @@
 
                     musicaActiva = false;
 
-                    musicaJuego.pause();
+                    musicaMenu.pause();
+
 
                     botonMusica.textContent =
                         "🔇";
-
-                }
-
-            }
-        );
-
-
-        /*
-            Si el navegador bloqueó el autoplay,
-            cualquier clic dentro del juego intenta
-            iniciar nuevamente la música.
-        */
-
-        juego.addEventListener(
-            "click",
-            reintentarMusica
-        );
-
-
-        window.addEventListener(
-            "keydown",
-            () => {
-
-                if (
-                    juego.style.display === "flex" &&
-                    musicaActiva &&
-                    musicaJuego.paused
-                ) {
-
-                    reintentarMusica();
 
                 }
 
@@ -642,6 +604,7 @@
         const teclas = {};
 
 
+
         // =====================================================
         // CONEXIÓN
         // =====================================================
@@ -709,11 +672,9 @@
             "click",
             () => {
 
-                /*
-                    Intentamos iniciar la música aquí
-                    porque este clic sí cuenta como
-                    interacción directa del usuario.
-                */
+
+                // Intentar iniciar música mientras
+                // todavía estamos en el menú.
 
                 iniciarMusica();
 
@@ -793,11 +754,9 @@
 
         function intentarUnirse() {
 
-            /*
-                Intentamos comenzar la música desde
-                el clic del botón para evitar el bloqueo
-                de autoplay.
-            */
+
+            // Intentar iniciar música mientras
+            // seguimos en el menú.
 
             iniciarMusica();
 
@@ -973,20 +932,31 @@
                 "";
 
 
+            /*
+                MUY IMPORTANTE:
+
+                La música se detiene justo cuando
+                se entra al juego.
+            */
+
+            detenerMusica();
+
+
+            /*
+                El botón de música pertenece al menú,
+                por lo que también desaparece.
+            */
+
+            botonMusica.style.display =
+                "none";
+
+
             menu.style.display =
                 "none";
 
 
             juego.style.display =
                 "flex";
-
-
-            /*
-                Iniciar música al entrar
-                definitivamente a la partida.
-            */
-
-            iniciarMusica();
 
 
             console.log(
@@ -1083,8 +1053,7 @@
                         );
 
 
-                        // El jugador local se maneja
-                        // directamente con jugadorLocal.
+                        // Jugador local
 
                         if (
                             jugador.id === miId
@@ -1423,6 +1392,7 @@
                 return;
 
             }
+
 
 
             // =================================================
