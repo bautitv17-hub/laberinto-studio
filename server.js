@@ -55,18 +55,6 @@ app.get("/", (req, res) => {
 
 // =========================================================
 // SALAS
-//
-// Cada sala queda así:
-//
-// sala -> Map
-//
-// Map:
-//
-// socketId -> {
-//     id,
-//     x,
-//     y
-// }
 // =========================================================
 
 const salas =
@@ -170,20 +158,6 @@ function obtenerJugadores(codigo) {
     }
 
 
-    /*
-        SIEMPRE devuelve un ARRAY.
-
-        Nunca devuelve el Map.
-
-        Nunca devuelve:
-
-        {
-            codigo,
-            jugadores
-        }
-    */
-
-
     return Array.from(
         sala.values()
     ).map(
@@ -229,19 +203,8 @@ function actualizarSala(codigo) {
         obtenerJugadores(codigo);
 
 
-    console.log(
-        "Actualizando sala:",
-        codigo,
-        "Jugadores:",
-        jugadores
-    );
-
-
     /*
-        IMPORTANTE:
-
-        El segundo argumento es SIEMPRE
-        el ARRAY de jugadores.
+        Siempre mandamos un ARRAY.
     */
 
     io.to(codigo).emit(
@@ -253,7 +216,7 @@ function actualizarSala(codigo) {
 
 
 // =========================================================
-// CONEXIÓN DE JUGADORES
+// CONEXIÓN
 // =========================================================
 
 io.on(
@@ -281,9 +244,6 @@ io.on(
         socket.on(
             "crearSala",
             () => {
-
-                // Si ya estaba en una sala,
-                // no permitimos crear otra encima.
 
                 if (
                     socket.sala
@@ -356,20 +316,13 @@ io.on(
                 );
 
 
-                // Confirmación
-
                 socket.emit(
                     "salaCreada",
                     {
-
-                        codigo:
-                            codigo
-
+                        codigo
                     }
                 );
 
-
-                // Lista inicial
 
                 actualizarSala(
                     codigo
@@ -387,8 +340,6 @@ io.on(
         socket.on(
             "unirseSala",
             (codigoRecibido) => {
-
-                // Validar
 
                 if (
                     typeof codigoRecibido !==
@@ -416,8 +367,6 @@ io.on(
                 );
 
 
-                // Código incorrecto
-
                 if (
                     codigo.length !== 5
                 ) {
@@ -431,8 +380,6 @@ io.on(
 
                 }
 
-
-                // Buscar sala
 
                 const sala =
                     salas.get(codigo);
@@ -450,8 +397,6 @@ io.on(
                 }
 
 
-                // Sala llena
-
                 if (
                     sala.size >=
                     MAX_JUGADORES
@@ -467,7 +412,7 @@ io.on(
                 }
 
 
-                // Si ya está en esa misma sala
+                // Ya está en esa sala
 
                 if (
                     socket.sala === codigo
@@ -493,21 +438,21 @@ io.on(
 
 
                 // =================================================
-                // SACARLO DE SU SALA ANTERIOR
+                // SALA ANTERIOR
                 // =================================================
 
                 if (
                     socket.sala
                 ) {
 
-                    const salaAnterior =
-                        salas.get(
-                            socket.sala
-                        );
-
-
                     const codigoAnterior =
                         socket.sala;
+
+
+                    const salaAnterior =
+                        salas.get(
+                            codigoAnterior
+                        );
 
 
                     if (
@@ -554,7 +499,7 @@ io.on(
 
 
                 // =================================================
-                // POSICIÓN DEL NUEVO JUGADOR
+                // POSICIÓN
                 // =================================================
 
                 const numeroJugador =
@@ -585,15 +530,11 @@ io.on(
                 };
 
 
-                // Guardar
-
                 sala.set(
                     socket.id,
                     jugador
                 );
 
-
-                // Unir Socket.IO
 
                 socket.join(
                     codigo
@@ -609,24 +550,13 @@ io.on(
                 );
 
 
-                // =================================================
-                // CONFIRMAR AL NUEVO JUGADOR
-                // =================================================
-
                 socket.emit(
                     "salaUnida",
                     {
-
-                        codigo:
-                            codigo
-
+                        codigo
                     }
                 );
 
-
-                // =================================================
-                // ACTUALIZAR A TODOS
-                // =================================================
 
                 actualizarSala(
                     codigo
@@ -644,8 +574,6 @@ io.on(
         socket.on(
             "moverJugador",
             (datos) => {
-
-                // No tiene sala
 
                 if (
                     !socket.sala
@@ -669,8 +597,6 @@ io.on(
                 }
 
 
-                // Buscar jugador
-
                 const jugador =
                     sala.get(
                         socket.id
@@ -683,8 +609,6 @@ io.on(
 
                 }
 
-
-                // Validar datos
 
                 if (
                     !datos ||
@@ -714,7 +638,9 @@ io.on(
                 }
 
 
-                // Limitar posición al canvas
+                // =================================================
+                // LIMITAR AL CANVAS
+                // =================================================
 
                 jugador.x =
                     Math.max(
@@ -736,7 +662,9 @@ io.on(
                     );
 
 
-                // Actualizar a todos
+                // =================================================
+                // ACTUALIZAR SALA
+                // =================================================
 
                 actualizarSala(
                     socket.sala
@@ -783,14 +711,10 @@ io.on(
                 }
 
 
-                // Eliminar jugador
-
                 sala.delete(
                     socket.id
                 );
 
-
-                // Vacía
 
                 if (
                     sala.size === 0
@@ -809,8 +733,6 @@ io.on(
 
                 else {
 
-                    // Avisar a los restantes
-
                     actualizarSala(
                         codigo
                     );
@@ -822,7 +744,6 @@ io.on(
 
     }
 );
-
 
 
 // =========================================================
