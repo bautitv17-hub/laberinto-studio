@@ -1,1358 +1,781 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laberinto Online</title>
 
-<title>Juego Online</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-<style>
+        body {
+            margin: 0;
+            background: #050505;
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+        #menu {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            background: #080808;
+        }
 
-body {
-    background: #000;
-    color: white;
-    font-family: Arial, sans-serif;
-    overflow: hidden;
-}
+        #menu h1 {
+            margin-bottom: 20px;
+            font-size: 40px;
+        }
 
-/* =========================
-   MENÚ
-========================= */
+        button,
+        input {
+            width: 280px;
+            padding: 14px;
+            border-radius: 8px;
+            border: none;
+            font-size: 17px;
+        }
 
-#menu {
-    width: 400px;
-    max-width: 90%;
-    margin: 80px auto;
-    padding: 30px;
-    background: #222;
-    border-radius: 15px;
-    text-align: center;
-}
+        button {
+            background: #6c2cff;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
 
-#menu h1 {
-    margin-bottom: 25px;
-}
+        button:hover {
+            background: #814cff;
+        }
 
-#menu h2 {
-    margin-top: 15px;
-    margin-bottom: 10px;
-}
+        input {
+            text-align: center;
+            text-transform: uppercase;
+        }
 
-#menu input,
-#menu button {
-    width: 100%;
-    height: 45px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-}
+        #mensaje {
+            min-height: 25px;
+            color: #ff5555;
+            text-align: center;
+        }
 
-#menu input {
-    padding: 10px;
-    text-align: center;
-    text-transform: uppercase;
-}
+        #juego {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            justify-content: center;
+            align-items: center;
+            background: #050505;
+        }
 
-#menu button {
-    background: #4caf50;
-    color: white;
-    cursor: pointer;
-}
+        #informacion {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 8px 20px;
+            border-radius: 10px;
+        }
 
-#menu button:hover {
-    background: #43a047;
-}
+        #informacion h2 {
+            margin: 0 0 5px;
+            font-size: 20px;
+        }
 
-#mensaje {
-    margin-top: 15px;
-    min-height: 20px;
-    color: #ffd166;
-}
+        #informacion div {
+            font-size: 15px;
+        }
 
-hr {
-    border: 0;
-    border-top: 1px solid #555;
-    margin: 25px 0;
-}
-
-/* =========================
-   JUEGO
-========================= */
-
-#juego {
-    display: none;
-    width: 100vw;
-    height: 100vh;
-}
-
-#informacion {
-    height: 70px;
-    text-align: center;
-    padding-top: 8px;
-}
-
-#informacion h2 {
-    margin-bottom: 5px;
-}
-
-#codigoSala {
-    color: #00ff88;
-    letter-spacing: 4px;
-}
-
-#cancha {
-    display: block;
-    margin: 0 auto;
-    background: #000;
-    image-rendering: pixelated;
-
-    max-width: 100vw;
-    max-height: calc(100vh - 70px);
-}
-
-</style>
-
+        canvas {
+            display: block;
+            background: #000;
+            border: 2px solid #713cff;
+        }
+    </style>
 </head>
 
 <body>
 
+    <!-- MENÚ -->
+    <div id="menu">
 
-<!-- =========================
-     MENÚ
-========================= -->
+        <h1>LABERINTO ONLINE</h1>
 
-<div id="menu">
+        <button id="crearSala">
+            CREAR SALA
+        </button>
 
-    <h1>🎮 Juego Online</h1>
+        <input
+            id="codigoInput"
+            type="text"
+            maxlength="5"
+            placeholder="CÓDIGO DE SALA"
+            autocomplete="off"
+        >
 
-    <h2>Crear una sala</h2>
+        <button id="unirseSala">
+            UNIRSE A LA SALA
+        </button>
 
-    <button id="crearSala">
-        CREAR SALA
-    </button>
-
-    <hr>
-
-    <h2>Unirse a una sala</h2>
-
-    <input
-        id="codigoInput"
-        type="text"
-        maxlength="5"
-        placeholder="CÓDIGO DE SALA"
-        autocomplete="off"
-    >
-
-    <button id="unirseSala">
-        UNIRSE A LA SALA
-    </button>
-
-    <div id="mensaje"></div>
-
-</div>
-
-
-<!-- =========================
-     JUEGO
-========================= -->
-
-<div id="juego">
-
-    <div id="informacion">
-
-        <h2>
-            SALA:
-            <span id="codigoSala">-----</span>
-        </h2>
-
-        <div>
-            Jugadores:
-            <span id="cantidadJugadores">0</span>/4
-        </div>
+        <div id="mensaje"></div>
 
     </div>
 
-    <canvas id="cancha"></canvas>
 
-</div>
+    <!-- JUEGO -->
+    <div id="juego">
 
+        <div id="informacion">
+            <h2>
+                SALA:
+                <span id="codigoSala">-----</span>
+            </h2>
 
-<script src="/socket.io/socket.io.js"></script>
+            <div>
+                Jugadores:
+                <span id="cantidadJugadores">0</span>/4
+            </div>
+        </div>
 
-<script>
+        <canvas id="cancha"></canvas>
 
-/* =====================================================
-   SOCKET.IO
-===================================================== */
-
-const socket = io();
-
-
-/* =====================================================
-   ELEMENTOS
-===================================================== */
-
-const menu =
-    document.getElementById("menu");
-
-const juego =
-    document.getElementById("juego");
-
-const crearSala =
-    document.getElementById("crearSala");
-
-const unirseSala =
-    document.getElementById("unirseSala");
-
-const codigoInput =
-    document.getElementById("codigoInput");
-
-const mensaje =
-    document.getElementById("mensaje");
-
-const codigoSala =
-    document.getElementById("codigoSala");
-
-const cantidadJugadores =
-    document.getElementById("cantidadJugadores");
-
-const canvas =
-    document.getElementById("cancha");
-
-const ctx =
-    canvas.getContext("2d");
+    </div>
 
 
-/* =====================================================
-   MAPA
-===================================================== */
+    <!-- SOCKET.IO -->
+    <script src="/socket.io/socket.io.js"></script>
 
-const CELL = 20;
+    <script>
 
-const MAP = [
+        // =========================================================
+        // SOCKET
+        // =========================================================
 
-"#######################################",
-"#P        #       #       #          #",
-"#         #       #       #          #",
-"#         #       #       #          #",
-"#         ###     #     ###      ######",
-"#                                   ##",
-"#                                   ##",
-"###   #########       #########    ##",
-"#     #                         #    #",
-"#     #       ###########       #    #",
-"#     #       #         #       #    #",
-"#             #         #            #",
-"#             #         #            #",
-"#     #       #         #       #    #",
-"#     #       ###########       #    #",
-"#     #                         #    #",
-"###   #########       #########    ##",
-"#                                   ##",
-"#                                   ##",
-"#         ###     #     ###         ##",
-"#         #       #       #         ##",
-"#         #       #       #         ##",
-"#         #       #       #         ##",
-"#         #       #       #         ##",
-"#                                   ##",
-"#      ######           ######      ##",
-"#      #                     #      ##",
-"#      #                     #      ##",
-"#                                   ##",
-"#                                   ##",
-"#######################################"
-
-];
+        const socket = io();
 
 
-const ROWS = MAP.length;
-const COLS = MAP[0].length;
+        // =========================================================
+        // ELEMENTOS
+        // =========================================================
 
-canvas.width =
-    COLS * CELL;
+        const menu = document.getElementById("menu");
+        const juego = document.getElementById("juego");
 
-canvas.height =
-    ROWS * CELL;
+        const crearSalaBtn = document.getElementById("crearSala");
+        const unirseSalaBtn = document.getElementById("unirseSala");
 
+        const codigoInput = document.getElementById("codigoInput");
+        const mensaje = document.getElementById("mensaje");
 
-/* =====================================================
-   VARIABLES
-===================================================== */
+        const codigoSala = document.getElementById("codigoSala");
+        const cantidadJugadores = document.getElementById("cantidadJugadores");
 
-let miId = null;
-
-let salaActual = null;
-
-let jugadores = [];
-
-
-/* =====================================================
-   JUGADOR
-===================================================== */
-
-const player = {
-
-    x: 30,
-    y: 30,
-
-    radius: 8,
-
-    speed: 220,
-
-    dx: 0,
-    dy: 0
-
-};
+        const canvas = document.getElementById("cancha");
+        const ctx = canvas.getContext("2d");
 
 
-/* =====================================================
-   BUSCAR POSICIÓN INICIAL
-===================================================== */
+        // =========================================================
+        // MAPA
+        // =========================================================
 
-function buscarInicio() {
+        const CELL = 20;
 
-    for (
-        let y = 0;
-        y < ROWS;
-        y++
-    ) {
+        const MAP = [
+            "#######################################",
+            "#P        #       #       #          #",
+            "#         #       #       #          #",
+            "#         #       #       #          #",
+            "#         ###     #     ###      ######",
+            "#                                   ##",
+            "#                                   ##",
+            "###   #########       #########    ##",
+            "#     #                         #    #",
+            "#     #       ###########       #    #",
+            "#     #       #         #       #    #",
+            "#             #         #            #",
+            "#             #         #            #",
+            "#     #       #         #       #    #",
+            "#     #       ###########       #    #",
+            "#     #                         #    #",
+            "###   #########       #########    ##",
+            "#                                   ##",
+            "#                                   ##",
+            "#         ###     #     ###         ##",
+            "#         #       #       #         ##",
+            "#         #       #       #         ##",
+            "#         #       #       #         ##",
+            "#         #       #       #         ##",
+            "#                                   ##",
+            "#      ######           ######      ##",
+            "#      #                     #      ##",
+            "#      #                     #      ##",
+            "#                                   ##",
+            "#                                   ##",
+            "#######################################"
+        ];
 
-        for (
-            let x = 0;
-            x < COLS;
-            x++
-        ) {
+        const ROWS = MAP.length;
+        const COLS = MAP[0].length;
 
-            if (
-                MAP[y][x] === "P"
-            ) {
+        canvas.width = COLS * CELL;
+        canvas.height = ROWS * CELL;
 
-                player.x =
-                    x * CELL +
-                    CELL / 2;
 
-                player.y =
-                    y * CELL +
-                    CELL / 2;
+        // =========================================================
+        // JUGADORES
+        // =========================================================
+
+        let jugadores = [];
+
+        let miId = null;
+
+        let salaActual = null;
+
+        let jugadorLocal = {
+            x: 30,
+            y: 30
+        };
+
+
+        // =========================================================
+        // CONEXIÓN
+        // =========================================================
+
+        socket.on("connect", () => {
+
+            miId = socket.id;
+
+            console.log("Conectado al servidor:", miId);
+
+        });
+
+
+        socket.on("disconnect", () => {
+
+            console.log("Desconectado del servidor");
+
+        });
+
+
+        // =========================================================
+        // CREAR SALA
+        // =========================================================
+
+        crearSalaBtn.addEventListener("click", () => {
+
+            mensaje.textContent = "Creando sala...";
+
+            socket.emit("crearSala");
+
+        });
+
+
+        // =========================================================
+        // UNIRSE
+        // =========================================================
+
+        unirseSalaBtn.addEventListener("click", () => {
+
+            const codigo = codigoInput.value
+                .trim()
+                .toUpperCase();
+
+            if (codigo.length !== 5) {
+
+                mensaje.textContent =
+                    "El código debe tener 5 caracteres.";
 
                 return;
             }
 
-        }
+            mensaje.textContent = "Conectando...";
 
-    }
+            socket.emit("unirseSala", codigo);
 
-}
-
-buscarInicio();
+        });
 
 
-/* =====================================================
-   CONEXIÓN
-===================================================== */
+        codigoInput.addEventListener("keydown", (e) => {
 
-socket.on(
-    "connect",
-    () => {
+            if (e.key === "Enter") {
 
-        miId =
-            socket.id;
+                unirseSalaBtn.click();
 
-        console.log(
-            "Conectado:",
-            miId
-        );
+            }
 
-    }
-);
+        });
 
 
-socket.on(
-    "connect_error",
-    () => {
+        // =========================================================
+        // SALA CREADA
+        // =========================================================
 
-        mensaje.textContent =
-            "No se pudo conectar al servidor.";
+        socket.on("salaCreada", (datos) => {
 
-    }
-);
+            console.log("Sala creada:", datos);
 
+            if (!datos || !datos.codigo) {
 
-/* =====================================================
-   CREAR SALA
-===================================================== */
+                mensaje.textContent =
+                    "El servidor devolvió datos incorrectos.";
 
-crearSala.addEventListener(
-    "click",
-    () => {
+                return;
+            }
 
-        mensaje.textContent =
-            "Creando sala...";
+            entrarAlJuego(datos.codigo);
 
-        socket.emit(
-            "crearSala"
-        );
-
-    }
-);
+        });
 
 
-/* =====================================================
-   UNIRSE
-===================================================== */
+        // =========================================================
+        // SALA UNIDA
+        // =========================================================
 
-unirseSala.addEventListener(
-    "click",
-    unirse
-);
+        socket.on("salaUnida", (datos) => {
 
+            console.log("Sala unida:", datos);
 
-codigoInput.addEventListener(
-    "keydown",
-    event => {
+            if (!datos || !datos.codigo) {
 
-        if (
-            event.key === "Enter"
-        ) {
+                mensaje.textContent =
+                    "El servidor devolvió datos incorrectos.";
 
-            unirse();
+                return;
+            }
 
-        }
+            entrarAlJuego(datos.codigo);
 
-    }
-);
+        });
 
 
-function unirse() {
+        // =========================================================
+        // ERROR DE SALA
+        // =========================================================
 
-    const codigo =
-        codigoInput.value
-            .trim()
-            .toUpperCase();
+        socket.on("errorSala", (texto) => {
 
-
-    if (
-        codigo.length !== 5
-    ) {
-
-        mensaje.textContent =
-            "El código debe tener 5 caracteres.";
-
-        return;
-    }
-
-
-    mensaje.textContent =
-        "Entrando a la sala...";
-
-
-    socket.emit(
-        "unirseSala",
-        codigo
-    );
-
-}
-
-
-/* =====================================================
-   SALA CREADA
-===================================================== */
-
-socket.on(
-    "salaCreada",
-    datos => {
-
-        console.log(
-            "Sala creada:",
-            datos
-        );
-
-
-        if (
-            !datos ||
-            !datos.codigo
-        ) {
+            console.log("Error de sala:", texto);
 
             mensaje.textContent =
-                "Error creando la sala.";
+                texto || "No se pudo entrar a la sala.";
 
-            return;
+        });
+
+
+        // =========================================================
+        // ENTRAR AL JUEGO
+        // =========================================================
+
+        function entrarAlJuego(codigo) {
+
+            salaActual = codigo;
+
+            codigoSala.textContent = codigo;
+
+            menu.style.display = "none";
+
+            juego.style.display = "flex";
+
+            console.log("Entraste a la sala:", codigo);
+
         }
 
 
-        entrarAlJuego(
-            datos.codigo
-        );
+        // =========================================================
+        // ACTUALIZAR JUGADORES
+        // =========================================================
 
-    }
-);
+        socket.on("actualizarJugadores", (lista) => {
 
-
-/* =====================================================
-   SALA UNIDA
-===================================================== */
-
-socket.on(
-    "salaUnida",
-    datos => {
-
-        console.log(
-            "Sala unida:",
-            datos
-        );
-
-
-        if (
-            !datos ||
-            !datos.codigo
-        ) {
-
-            mensaje.textContent =
-                "Error entrando a la sala.";
-
-            return;
-        }
-
-
-        entrarAlJuego(
-            datos.codigo
-        );
-
-    }
-);
-
-
-/* =====================================================
-   ENTRAR AL JUEGO
-===================================================== */
-
-function entrarAlJuego(
-    codigo
-) {
-
-    salaActual =
-        codigo;
-
-
-    codigoSala.textContent =
-        codigo;
-
-
-    menu.style.display =
-        "none";
-
-
-    juego.style.display =
-        "block";
-
-
-    mensaje.textContent =
-        "";
-
-}
-
-
-/* =====================================================
-   ERROR DE SALA
-===================================================== */
-
-socket.on(
-    "errorSala",
-    texto => {
-
-        console.error(
-            texto
-        );
-
-
-        mensaje.textContent =
-            texto;
-
-    }
-);
-
-
-/* =====================================================
-   ACTUALIZAR JUGADORES
-===================================================== */
-
-socket.on(
-    "actualizarJugadores",
-    lista => {
-
-        console.log(
-            "Jugadores:",
-            lista
-        );
-
-
-        if (
-            !Array.isArray(lista)
-        ) {
-
-            console.error(
-                "El servidor no envió un array:",
+            console.log(
+                "Datos recibidos de jugadores:",
                 lista
             );
 
-            return;
-        }
+            // MUY IMPORTANTE:
+            // El servidor SIEMPRE debe mandar un ARRAY.
 
+            if (!Array.isArray(lista)) {
 
-        jugadores =
-            lista;
+                console.error(
+                    "El servidor no envió un array:",
+                    lista
+                );
 
+                return;
+            }
 
-        cantidadJugadores.textContent =
-            jugadores.length;
+            jugadores = lista;
 
+            cantidadJugadores.textContent =
+                jugadores.length;
 
-        const yo =
-            jugadores.find(
-                jugador =>
-                    jugador.id ===
-                    miId
+            // Buscar nuestro jugador
+
+            const yo = jugadores.find(
+                jugador => jugador.id === miId
             );
 
+            if (yo) {
 
-        if (yo) {
+                jugadorLocal.x = yo.x;
 
-            /*
-             * Sincronización inicial.
-             */
+                jugadorLocal.y = yo.y;
+
+            }
+
+        });
+
+
+        // =========================================================
+        // MAPA
+        // =========================================================
+
+        function esPared(x, y) {
+
+            const col = Math.floor(x / CELL);
+            const row = Math.floor(y / CELL);
 
             if (
-                Math.abs(
-                    player.x - yo.x
-                ) > 100 ||
-                Math.abs(
-                    player.y - yo.y
-                ) > 100
+                row < 0 ||
+                row >= ROWS ||
+                col < 0 ||
+                col >= COLS
             ) {
 
-                player.x =
-                    yo.x;
-
-                player.y =
-                    yo.y;
+                return true;
 
             }
 
-        }
-
-    }
-);
-
-
-/* =====================================================
-   TECLADO
-===================================================== */
-
-const keys = {
-
-    up: false,
-    down: false,
-    left: false,
-    right: false
-
-};
-
-
-document.addEventListener(
-    "keydown",
-    event => {
-
-        const key =
-            event.key.toLowerCase();
-
-
-        if (
-            key === "w" ||
-            key === "arrowup"
-        ) {
-
-            keys.up = true;
+            return MAP[row][col] === "#";
 
         }
 
 
-        if (
-            key === "s" ||
-            key === "arrowdown"
-        ) {
+        // =========================================================
+        // COLISIÓN
+        // =========================================================
 
-            keys.down = true;
+        function puedeMoverse(x, y) {
 
-        }
+            const radio = 8;
 
+            if (esPared(x - radio, y - radio)) return false;
+            if (esPared(x + radio, y - radio)) return false;
+            if (esPared(x - radio, y + radio)) return false;
+            if (esPared(x + radio, y + radio)) return false;
 
-        if (
-            key === "a" ||
-            key === "arrowleft"
-        ) {
-
-            keys.left = true;
+            return true;
 
         }
 
 
-        if (
-            key === "d" ||
-            key === "arrowright"
-        ) {
+        // =========================================================
+        // TECLAS
+        // =========================================================
 
-            keys.right = true;
+        const teclas = {};
 
-        }
+        window.addEventListener("keydown", (e) => {
 
+            teclas[e.key.toLowerCase()] = true;
 
-        actualizarDireccion();
+        });
 
-    }
-);
+        window.addEventListener("keyup", (e) => {
 
+            teclas[e.key.toLowerCase()] = false;
 
-document.addEventListener(
-    "keyup",
-    event => {
+        });
 
-        const key =
-            event.key.toLowerCase();
 
+        // =========================================================
+        // MOVIMIENTO
+        // =========================================================
 
-        if (
-            key === "w" ||
-            key === "arrowup"
-        ) {
+        let ultimoEnvio = 0;
 
-            keys.up = false;
+        function actualizarMovimiento(dt) {
 
-        }
+            if (!salaActual) return;
 
-
-        if (
-            key === "s" ||
-            key === "arrowdown"
-        ) {
-
-            keys.down = false;
-
-        }
-
-
-        if (
-            key === "a" ||
-            key === "arrowleft"
-        ) {
-
-            keys.left = false;
-
-        }
-
-
-        if (
-            key === "d" ||
-            key === "arrowright"
-        ) {
-
-            keys.right = false;
-
-        }
-
-
-        actualizarDireccion();
-
-    }
-);
-
-
-/* =====================================================
-   DIRECCIÓN
-===================================================== */
-
-function actualizarDireccion() {
-
-    let dx = 0;
-    let dy = 0;
-
-
-    if (keys.left)
-        dx--;
-
-    if (keys.right)
-        dx++;
-
-    if (keys.up)
-        dy--;
-
-    if (keys.down)
-        dy++;
-
-
-    /*
-     * Evita que la diagonal sea más rápida.
-     */
-
-    if (
-        dx !== 0 &&
-        dy !== 0
-    ) {
-
-        const longitud =
-            Math.sqrt(
-                dx * dx +
-                dy * dy
-            );
-
-
-        dx /=
-            longitud;
-
-        dy /=
-            longitud;
-
-    }
-
-
-    player.dx =
-        dx;
-
-    player.dy =
-        dy;
-
-}
-
-
-/* =====================================================
-   PARED
-===================================================== */
-
-function esPared(
-    x,
-    y
-) {
-
-    const columna =
-        Math.floor(
-            x / CELL
-        );
-
-
-    const fila =
-        Math.floor(
-            y / CELL
-        );
-
-
-    if (
-        columna < 0 ||
-        columna >= COLS ||
-        fila < 0 ||
-        fila >= ROWS
-    ) {
-
-        return true;
-
-    }
-
-
-    return (
-        MAP[fila][columna] === "#"
-    );
-
-}
-
-
-/* =====================================================
-   COLISIÓN
-===================================================== */
-
-function puedeMoverse(
-    x,
-    y
-) {
-
-    const r =
-        player.radius;
-
-
-    return (
-
-        !esPared(
-            x - r,
-            y - r
-        )
-
-        &&
-
-        !esPared(
-            x + r,
-            y - r
-        )
-
-        &&
-
-        !esPared(
-            x - r,
-            y + r
-        )
-
-        &&
-
-        !esPared(
-            x + r,
-            y + r
-        )
-
-    );
-
-}
-
-
-/* =====================================================
-   MOVIMIENTO
-===================================================== */
-
-let ultimoEnvio = 0;
-
-
-function moverJugador(
-    delta
-) {
-
-    if (
-        juego.style.display ===
-        "none"
-    ) {
-
-        return;
-    }
-
-
-    const movimientoX =
-        player.dx *
-        player.speed *
-        delta;
-
-
-    const movimientoY =
-        player.dy *
-        player.speed *
-        delta;
-
-
-    /*
-     * Movimiento horizontal.
-     */
-
-    const nuevoX =
-        player.x +
-        movimientoX;
-
-
-    if (
-        puedeMoverse(
-            nuevoX,
-            player.y
-        )
-    ) {
-
-        player.x =
-            nuevoX;
-
-    }
-
-
-    /*
-     * Movimiento vertical.
-     */
-
-    const nuevoY =
-        player.y +
-        movimientoY;
-
-
-    if (
-        puedeMoverse(
-            player.x,
-            nuevoY
-        )
-    ) {
-
-        player.y =
-            nuevoY;
-
-    }
-
-
-    /*
-     * Enviar posición.
-     */
-
-    const ahora =
-        performance.now();
-
-
-    if (
-        ahora - ultimoEnvio >
-        33
-    ) {
-
-        ultimoEnvio =
-            ahora;
-
-
-        socket.emit(
-            "moverJugador",
-            {
-                x: player.x,
-                y: player.y
-            }
-        );
-
-    }
-
-}
-
-
-/* =====================================================
-   DIBUJAR MAPA
-===================================================== */
-
-function dibujarMapa() {
-
-    for (
-        let y = 0;
-        y < ROWS;
-        y++
-    ) {
-
-        for (
-            let x = 0;
-            x < COLS;
-            x++
-        ) {
-
-            const tile =
-                MAP[y][x];
-
+            let dx = 0;
+            let dy = 0;
 
             if (
-                tile === "#"
+                teclas["w"] ||
+                teclas["arrowup"]
             ) {
 
-                ctx.fillStyle =
-                    "#28105f";
+                dy -= 1;
+
+            }
+
+            if (
+                teclas["s"] ||
+                teclas["arrowdown"]
+            ) {
+
+                dy += 1;
+
+            }
+
+            if (
+                teclas["a"] ||
+                teclas["arrowleft"]
+            ) {
+
+                dx -= 1;
+
+            }
+
+            if (
+                teclas["d"] ||
+                teclas["arrowright"]
+            ) {
+
+                dx += 1;
+
+            }
+
+            if (dx === 0 && dy === 0) return;
 
 
-                ctx.fillRect(
-                    x * CELL,
-                    y * CELL,
-                    CELL,
-                    CELL
-                );
+            // Normalizar diagonal
+
+            const longitud =
+                Math.sqrt(dx * dx + dy * dy);
+
+            dx /= longitud;
+            dy /= longitud;
 
 
-                ctx.strokeStyle =
-                    "#713cff";
+            const velocidad = 220;
+
+            const nuevoX =
+                jugadorLocal.x +
+                dx * velocidad * dt;
+
+            const nuevoY =
+                jugadorLocal.y +
+                dy * velocidad * dt;
 
 
-                ctx.lineWidth =
-                    2;
+            // Movimiento X
+
+            if (puedeMoverse(nuevoX, jugadorLocal.y)) {
+
+                jugadorLocal.x = nuevoX;
+
+            }
 
 
-                ctx.strokeRect(
-                    x * CELL + 1,
-                    y * CELL + 1,
-                    CELL - 2,
-                    CELL - 2
-                );
+            // Movimiento Y
 
-            } else {
+            if (puedeMoverse(jugadorLocal.x, nuevoY)) {
 
-                ctx.fillStyle =
-                    "#000";
+                jugadorLocal.y = nuevoY;
+
+            }
 
 
-                ctx.fillRect(
-                    x * CELL,
-                    y * CELL,
-                    CELL,
-                    CELL
-                );
+            // Enviar posición al servidor
+            // máximo unas 30 veces por segundo
+
+            const ahora = performance.now();
+
+            if (ahora - ultimoEnvio > 33) {
+
+                ultimoEnvio = ahora;
+
+                socket.emit("moverJugador", {
+
+                    x: jugadorLocal.x,
+                    y: jugadorLocal.y
+
+                });
 
             }
 
         }
 
-    }
 
-}
+        // =========================================================
+        // DIBUJAR MAPA
+        // =========================================================
 
+        function dibujarMapa() {
 
-/* =====================================================
-   DIBUJAR PERSONAJE
-===================================================== */
-
-function dibujarJugador(
-    x,
-    y,
-    color,
-    nombre
-) {
-
-    /*
-     * Aura.
-     */
-
-    ctx.beginPath();
-
-    ctx.arc(
-        x,
-        y,
-        14,
-        0,
-        Math.PI * 2
-    );
-
-
-    ctx.fillStyle =
-        color === "#ffff00"
-            ? "rgba(255,255,0,0.15)"
-            : "rgba(255,0,0,0.15)";
-
-
-    ctx.fill();
-
-
-    /*
-     * Cuerpo.
-     */
-
-    ctx.beginPath();
-
-    ctx.arc(
-        x,
-        y,
-        8,
-        0,
-        Math.PI * 2
-    );
-
-
-    ctx.fillStyle =
-        color;
-
-
-    ctx.fill();
-
-
-    /*
-     * Borde.
-     */
-
-    ctx.strokeStyle =
-        "#fff";
-
-
-    ctx.lineWidth =
-        2;
-
-
-    ctx.stroke();
-
-
-    /*
-     * Brillo.
-     */
-
-    ctx.beginPath();
-
-    ctx.arc(
-        x - 2,
-        y - 2,
-        2,
-        0,
-        Math.PI * 2
-    );
-
-
-    ctx.fillStyle =
-        "#fff";
-
-
-    ctx.fill();
-
-
-    /*
-     * Nombre.
-     */
-
-    ctx.font =
-        "bold 11px Arial";
-
-
-    ctx.textAlign =
-        "center";
-
-
-    ctx.fillStyle =
-        "#fff";
-
-
-    ctx.fillText(
-        nombre,
-        x,
-        y - 15
-    );
-
-}
-
-
-/* =====================================================
-   DIBUJAR JUGADORES
-===================================================== */
-
-function dibujarJugadores() {
-
-    if (
-        !Array.isArray(jugadores)
-    ) {
-
-        return;
-    }
-
-
-    jugadores.forEach(
-        (jugador, indice) => {
-
-            if (!jugador)
-                return;
-
-
-            if (
-                jugador.id === miId
-            )
-                return;
-
-
-            if (
-                typeof jugador.x !==
-                    "number" ||
-
-                typeof jugador.y !==
-                    "number"
-            )
-                return;
-
-
-            dibujarJugador(
-                jugador.x,
-                jugador.y,
-                "#ff3333",
-                "JUGADOR " +
-                (indice + 1)
+            ctx.clearRect(
+                0,
+                0,
+                canvas.width,
+                canvas.height
             );
 
+
+            for (let fila = 0; fila < ROWS; fila++) {
+
+                for (let columna = 0; columna < COLS; columna++) {
+
+                    const x = columna * CELL;
+                    const y = fila * CELL;
+
+                    if (MAP[fila][columna] === "#") {
+
+                        ctx.fillStyle = "#28105f";
+
+                        ctx.fillRect(
+                            x,
+                            y,
+                            CELL,
+                            CELL
+                        );
+
+                        ctx.strokeStyle = "#713cff";
+
+                        ctx.strokeRect(
+                            x,
+                            y,
+                            CELL,
+                            CELL
+                        );
+
+                    } else {
+
+                        ctx.fillStyle = "#050505";
+
+                        ctx.fillRect(
+                            x,
+                            y,
+                            CELL,
+                            CELL
+                        );
+
+                    }
+
+                }
+
+            }
+
         }
-    );
 
 
-    /*
-     * Nuestro jugador.
-     */
+        // =========================================================
+        // DIBUJAR JUGADORES
+        // =========================================================
 
-    dibujarJugador(
-        player.x,
-        player.y,
-        "#ffff00",
-        "YO"
-    );
+        function dibujarJugadores() {
 
-}
+            if (!Array.isArray(jugadores)) {
 
+                return;
 
-/* =====================================================
-   DIBUJAR
-===================================================== */
-
-function dibujar() {
-
-    ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
+            }
 
 
-    dibujarMapa();
+            jugadores.forEach((jugador, indice) => {
 
-    dibujarJugadores();
+                if (
+                    typeof jugador.x !== "number" ||
+                    typeof jugador.y !== "number"
+                ) {
 
-}
+                    return;
 
-
-/* =====================================================
-   GAME LOOP
-===================================================== */
-
-let ultimoTiempo =
-    performance.now();
+                }
 
 
-function gameLoop(
-    tiempo
-) {
+                // Nuestro jugador
 
-    let delta =
-        (tiempo -
-            ultimoTiempo) /
-        1000;
+                if (jugador.id === miId) {
 
+                    ctx.fillStyle = "#ffe600";
 
-    ultimoTiempo =
-        tiempo;
+                } else {
 
+                    // Otros jugadores
 
-    if (
-        delta > 0.05
-    ) {
+                    const colores = [
+                        "#ff3030",
+                        "#00eaff",
+                        "#ff7b00",
+                        "#00ff66"
+                    ];
 
-        delta = 0.05;
+                    ctx.fillStyle =
+                        colores[indice % colores.length];
 
-    }
-
-
-    moverJugador(
-        delta
-    );
+                }
 
 
-    dibujar();
+                ctx.beginPath();
+
+                ctx.arc(
+                    jugador.x,
+                    jugador.y,
+                    8,
+                    0,
+                    Math.PI * 2
+                );
+
+                ctx.fill();
 
 
-    requestAnimationFrame(
-        gameLoop
-    );
+                // Borde
 
-}
+                ctx.strokeStyle = "white";
+
+                ctx.lineWidth = 2;
+
+                ctx.stroke();
+
+            });
+
+        }
 
 
-requestAnimationFrame(
-    gameLoop
-);
+        // =========================================================
+        // GAME LOOP
+        // =========================================================
 
-</script>
+        let ultimoTiempo = performance.now();
+
+        function gameLoop(tiempo) {
+
+            const dt =
+                Math.min(
+                    (tiempo - ultimoTiempo) / 1000,
+                    0.05
+                );
+
+            ultimoTiempo = tiempo;
+
+
+            actualizarMovimiento(dt);
+
+            dibujarMapa();
+
+            dibujarJugadores();
+
+
+            requestAnimationFrame(gameLoop);
+
+        }
+
+        requestAnimationFrame(gameLoop);
+
+    </script>
 
 </body>
 </html>
