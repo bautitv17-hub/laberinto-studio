@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Laberinto Online</title>
+    <title>El Laberinto</title>
 
     <style>
-
         * {
             box-sizing: border-box;
         }
@@ -18,223 +17,155 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-        }
-
-        body {
             background: #050505;
-            color: white;
             font-family: Arial, sans-serif;
+            color: white;
         }
 
-
-        /* =====================================================
-           MENU
-        ===================================================== */
+        /* =========================
+           MENÚ
+        ========================= */
 
         #menu {
-            width: 100vw;
-            height: 100vh;
-
+            position: fixed;
+            inset: 0;
             display: flex;
             flex-direction: column;
-
             justify-content: center;
             align-items: center;
-
-            gap: 15px;
-
-            background: #080808;
+            background:
+                radial-gradient(circle at center, #24133d 0%, #09070d 55%, #000 100%);
+            z-index: 10;
         }
 
         #menu h1 {
-            margin: 0 0 20px 0;
-
-            font-size: 40px;
-            text-align: center;
-        }
-
-
-        button,
-        input {
-            width: 280px;
-
-            padding: 14px;
-
-            border: none;
-            border-radius: 8px;
-
-            font-size: 17px;
-        }
-
-
-        button {
-            background: #6c2cff;
-
-            color: white;
-
-            cursor: pointer;
-
-            font-weight: bold;
-        }
-
-
-        button:hover {
-            background: #814cff;
-        }
-
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-
-        input {
-            text-align: center;
-
+            margin: 0 0 35px;
+            font-size: 55px;
+            letter-spacing: 5px;
             text-transform: uppercase;
+            text-shadow: 0 0 20px #8b4dff;
+        }
 
+        .boton {
+            width: 280px;
+            padding: 16px;
+            margin: 8px;
+            border: 2px solid #8b4dff;
+            border-radius: 8px;
+            background: #120c1c;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .boton:hover {
+            background: #8b4dff;
+            box-shadow: 0 0 20px #8b4dff;
+            transform: scale(1.04);
+        }
+
+        #codigoInput {
+            width: 280px;
+            padding: 15px;
+            margin: 8px;
+            border: 2px solid #8b4dff;
+            border-radius: 8px;
             outline: none;
+            background: #0b080f;
+            color: white;
+            font-size: 20px;
+            text-align: center;
+            text-transform: uppercase;
         }
-
-
-        input:focus {
-            box-shadow: 0 0 0 2px #6c2cff;
-        }
-
 
         #mensaje {
             min-height: 25px;
-
-            color: #ff5555;
-
+            margin-top: 15px;
+            color: #ff6464;
+            font-weight: bold;
             text-align: center;
-
-            max-width: 400px;
         }
 
-
-        /* =====================================================
-           BOTÓN DE MÚSICA - SOLO MENÚ
-        ===================================================== */
-
-        #botonMusica {
-            position: absolute;
-
-            top: 20px;
-            right: 20px;
-
-            z-index: 100;
-
-            width: 50px;
-            height: 50px;
-
-            padding: 0;
-
-            border-radius: 50%;
-
-            background: rgba(0, 0, 0, 0.85);
-
-            border: 2px solid #713cff;
-
-            font-size: 22px;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            cursor: pointer;
-        }
-
-
-        #botonMusica:hover {
-            background: #28105f;
-        }
-
-
-        /* =====================================================
-           JUEGO
-        ===================================================== */
-
-        #juego {
-            display: none;
-
-            width: 100vw;
-            height: 100vh;
-
-            position: relative;
-
-            justify-content: center;
-            align-items: center;
-
-            background: #050505;
-        }
-
-
-        /* =====================================================
-           INFORMACIÓN
-        ===================================================== */
-
-        #informacion {
-            position: absolute;
-
-            top: 10px;
-            left: 50%;
-
-            transform: translateX(-50%);
-
-            z-index: 20;
-
-            text-align: center;
-
-            background: rgba(0, 0, 0, 0.85);
-
-            padding: 8px 20px;
-
-            border-radius: 10px;
-
-            pointer-events: none;
-        }
-
-
-        #informacion h2 {
-            margin: 0 0 5px 0;
-
+        #salaCreada {
+            margin-top: 15px;
             font-size: 20px;
         }
 
-
-        #informacion div {
-            font-size: 15px;
+        #codigoSala {
+            color: #b77cff;
+            font-size: 30px;
+            font-weight: bold;
+            letter-spacing: 5px;
         }
 
+        /* =========================
+           BOTÓN DE MÚSICA
+        ========================= */
 
-        /* =====================================================
-           CANVAS
-        ===================================================== */
+        #botonMusica {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 55px;
+            height: 55px;
+            border: 2px solid #8b4dff;
+            border-radius: 50%;
+            background: rgba(10, 5, 20, 0.9);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 0 15px rgba(139, 77, 255, 0.5);
+        }
 
-        canvas {
-            display: block;
+        #botonMusica:hover {
+            background: #8b4dff;
+            transform: scale(1.08);
+        }
 
+        /* =========================
+           JUEGO
+        ========================= */
+
+        #juego {
+            display: none;
+            position: fixed;
+            inset: 0;
+            justify-content: center;
+            align-items: center;
             background: #000;
+        }
 
-            border: 2px solid #713cff;
-
+        #gameCanvas {
+            width: 780px;
+            height: 620px;
             max-width: 100vw;
             max-height: 100vh;
+            image-rendering: pixelated;
+            border: 2px solid #8b4dff;
+            box-shadow: 0 0 30px rgba(139, 77, 255, 0.4);
         }
 
+        #infoSala {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            z-index: 5;
+        }
     </style>
-
 </head>
-
 
 <body>
 
-
-    <!-- =====================================================
-         MÚSICA DEL MENÚ
-    ===================================================== -->
+    <!-- =========================
+         MÚSICA
+    ========================= -->
 
     <audio
         id="musicaMenu"
@@ -244,178 +175,97 @@
     </audio>
 
 
-
-    <!-- =====================================================
-         MENU PRINCIPAL
-    ===================================================== -->
+    <!-- =========================
+         MENÚ
+    ========================= -->
 
     <div id="menu">
 
-        <h1>
-            LABERINTO ONLINE
-        </h1>
+        <h1>EL LABERINTO</h1>
 
-
-        <button id="crearSala">
+        <button class="boton" id="crearSalaBtn">
             CREAR SALA
         </button>
 
-
         <input
-            id="codigoInput"
             type="text"
+            id="codigoInput"
             maxlength="5"
-            placeholder="CÓDIGO DE SALA"
-            autocomplete="off"
-            spellcheck="false"
-        >
+            placeholder="CÓDIGO DE SALA">
 
-
-        <button id="unirseSala">
-            UNIRSE A LA SALA
+        <button class="boton" id="unirseSalaBtn">
+            UNIRSE A SALA
         </button>
 
+        <div id="salaCreada">
+            Código de sala:
+            <span id="codigoSala">-----</span>
+        </div>
 
         <div id="mensaje"></div>
 
     </div>
 
 
-
-    <!-- =====================================================
-         BOTÓN DE MÚSICA
-         SOLO APARECE EN EL MENÚ
-    ===================================================== -->
-
-    <button
-        id="botonMusica"
-        title="Activar/desactivar música">
+    <!-- BOTÓN DE MÚSICA -->
+    <button id="botonMusica" title="Activar/desactivar música">
         🔊
     </button>
 
 
-
-    <!-- =====================================================
+    <!-- =========================
          JUEGO
-    ===================================================== -->
+    ========================= -->
 
     <div id="juego">
 
-
-        <div id="informacion">
-
-            <h2>
-
-                SALA:
-                <span id="codigoSala">-----</span>
-
-            </h2>
-
-
-            <div>
-
-                Jugadores:
-
-                <span id="cantidadJugadores">
-                    0
-                </span>
-
-                /4
-
-            </div>
-
+        <div id="infoSala">
+            Sala:
+            <strong id="codigoSalaJuego">-----</strong>
         </div>
 
-
-        <canvas id="cancha"></canvas>
+        <canvas
+            id="gameCanvas"
+            width="780"
+            height="620">
+        </canvas>
 
     </div>
 
 
-
-    <!-- =====================================================
-         SOCKET.IO
-    ===================================================== -->
-
+    <!-- SOCKET.IO -->
     <script src="/socket.io/socket.io.js"></script>
-
 
     <script>
 
-        "use strict";
+        /* =====================================
+           ELEMENTOS
+        ===================================== */
+
+        const menu = document.getElementById("menu");
+        const juego = document.getElementById("juego");
+
+        const crearSalaBtn = document.getElementById("crearSalaBtn");
+        const unirseSalaBtn = document.getElementById("unirseSalaBtn");
+
+        const codigoInput = document.getElementById("codigoInput");
+        const codigoSala = document.getElementById("codigoSala");
+        const codigoSalaJuego = document.getElementById("codigoSalaJuego");
+
+        const mensaje = document.getElementById("mensaje");
+
+        const musicaMenu = document.getElementById("musicaMenu");
+        const botonMusica = document.getElementById("botonMusica");
 
 
-        // =====================================================
-        // SOCKET
-        // =====================================================
-
-        const socket = io({
-            transports: ["websocket", "polling"]
-        });
-
-
-        // =====================================================
-        // ELEMENTOS
-        // =====================================================
-
-        const menu =
-            document.getElementById("menu");
-
-        const juego =
-            document.getElementById("juego");
-
-        const crearSalaBtn =
-            document.getElementById("crearSala");
-
-        const unirseSalaBtn =
-            document.getElementById("unirseSala");
-
-        const codigoInput =
-            document.getElementById("codigoInput");
-
-        const mensaje =
-            document.getElementById("mensaje");
-
-        const codigoSala =
-            document.getElementById("codigoSala");
-
-        const cantidadJugadores =
-            document.getElementById("cantidadJugadores");
-
-        const canvas =
-            document.getElementById("cancha");
-
-        const ctx =
-            canvas.getContext("2d");
-
-
-        // =====================================================
-        // MÚSICA DEL MENÚ
-        // =====================================================
-
-        const musicaMenu =
-            document.getElementById("musicaMenu");
-
-        const botonMusica =
-            document.getElementById("botonMusica");
-
+        /* =====================================
+           MÚSICA
+        ===================================== */
 
         let musicaActiva = true;
 
-
         musicaMenu.volume = 0.28;
 
-
-        /*
-            Inicia la música.
-
-            Los navegadores normalmente bloquean el
-            autoplay hasta que el usuario interactúa
-            con la página.
-
-            Por eso se intenta iniciar cuando el usuario
-            pulsa CREAR SALA o UNIRSE A LA SALA.
-        */
 
         function iniciarMusica() {
 
@@ -423,102 +273,265 @@
                 return;
             }
 
-
             musicaMenu.volume = 0.28;
-
 
             musicaMenu.play()
                 .then(() => {
 
-                    botonMusica.textContent =
-                        "🔊";
+                    botonMusica.textContent = "🔊";
 
                 })
-                .catch(() => {
+                .catch(error => {
 
                     console.log(
-                        "El navegador bloqueó el inicio automático de la música."
+                        "El navegador bloqueó la reproducción:",
+                        error
                     );
 
                 });
-
         }
 
-
-        // =====================================================
-        // DETENER MÚSICA AL ENTRAR AL JUEGO
-        // =====================================================
 
         function detenerMusica() {
 
             musicaMenu.pause();
-
             musicaMenu.currentTime = 0;
 
         }
 
 
-        // =====================================================
-        // BOTÓN MÚSICA
-        // =====================================================
+        botonMusica.addEventListener("click", function(event) {
 
-        botonMusica.addEventListener(
-            "click",
-            (event) => {
+            event.stopPropagation();
 
-                event.stopPropagation();
+            if (musicaMenu.paused) {
 
+                musicaActiva = true;
 
-                if (musicaMenu.paused) {
+                musicaMenu.volume = 0.28;
 
-                    musicaActiva = true;
+                musicaMenu.play()
+                    .then(() => {
 
-                    musicaMenu.volume =
-                        0.28;
+                        botonMusica.textContent = "🔊";
 
+                    })
+                    .catch(() => {
 
-                    musicaMenu.play()
-                        .then(() => {
+                        botonMusica.textContent = "🔇";
 
-                            botonMusica.textContent =
-                                "🔊";
+                    });
 
-                        })
-                        .catch(() => {
+            } else {
 
-                            botonMusica.textContent =
-                                "🔇";
+                musicaActiva = false;
 
-                        });
+                musicaMenu.pause();
 
-                }
-
-                else {
-
-                    musicaActiva = false;
-
-                    musicaMenu.pause();
-
-
-                    botonMusica.textContent =
-                        "🔇";
-
-                }
+                botonMusica.textContent = "🔇";
 
             }
+
+        });
+
+
+        /* =====================================
+           SOCKET.IO
+        ===================================== */
+
+        const socket = io();
+
+        let conectado = false;
+        let salaActual = null;
+
+
+        socket.on("connect", () => {
+
+            conectado = true;
+
+            console.log(
+                "Conectado al servidor:",
+                socket.id
+            );
+
+        });
+
+
+        socket.on("disconnect", () => {
+
+            conectado = false;
+
+            console.log("Desconectado del servidor");
+
+        });
+
+
+        /* =====================================
+           CREAR SALA
+        ===================================== */
+
+        crearSalaBtn.addEventListener("click", () => {
+
+            iniciarMusica();
+
+            mensaje.textContent = "";
+
+            if (!conectado) {
+
+                mensaje.textContent =
+                    "Esperando conexión con el servidor...";
+
+                return;
+
+            }
+
+            socket.emit("crearSala");
+
+        });
+
+
+        /* =====================================
+           SALA CREADA
+        ===================================== */
+
+        socket.on("salaCreada", datos => {
+
+            if (!datos || !datos.codigo) {
+                return;
+            }
+
+            entrarAlJuego(datos.codigo);
+
+        });
+
+
+        /* =====================================
+           UNIRSE A SALA
+        ===================================== */
+
+        function intentarUnirse() {
+
+            iniciarMusica();
+
+            mensaje.textContent = "";
+
+            const codigo =
+                codigoInput.value.trim().toUpperCase();
+
+
+            if (codigo.length !== 5) {
+
+                mensaje.textContent =
+                    "El código debe tener 5 caracteres.";
+
+                return;
+
+            }
+
+
+            if (!conectado) {
+
+                mensaje.textContent =
+                    "Esperando conexión con el servidor...";
+
+                return;
+
+            }
+
+
+            socket.emit("unirseSala", codigo);
+
+        }
+
+
+        unirseSalaBtn.addEventListener(
+            "click",
+            intentarUnirse
         );
 
 
+        codigoInput.addEventListener("keydown", event => {
 
-        // =====================================================
-        // MAPA
-        // =====================================================
+            if (event.key === "Enter") {
 
-        const CELL = 20;
+                intentarUnirse();
+
+            }
+
+        });
+
+
+        /* =====================================
+           SALA UNIDA
+        ===================================== */
+
+        socket.on("salaUnida", datos => {
+
+            if (!datos || !datos.codigo) {
+                return;
+            }
+
+            entrarAlJuego(datos.codigo);
+
+        });
+
+
+        /* =====================================
+           ERROR DE SALA
+        ===================================== */
+
+        socket.on("errorSala", texto => {
+
+            mensaje.textContent = texto;
+
+        });
+
+
+        /* =====================================
+           ENTRAR AL JUEGO
+        ===================================== */
+
+        function entrarAlJuego(codigo) {
+
+            salaActual = codigo;
+
+            codigoSala.textContent = codigo;
+            codigoSalaJuego.textContent = codigo;
+
+            mensaje.textContent = "";
+
+            /*
+             * APAGAMOS LA MÚSICA AL ENTRAR
+             * AL JUEGO
+             */
+            detenerMusica();
+
+            botonMusica.style.display = "none";
+
+            menu.style.display = "none";
+            juego.style.display = "flex";
+
+            console.log(
+                "Entraste a la sala:",
+                codigo
+            );
+
+            iniciarJuego();
+
+        }
+
+
+        /* =====================================
+           JUEGO
+        ===================================== */
+
+        const canvas =
+            document.getElementById("gameCanvas");
+
+        const ctx = canvas.getContext("2d");
 
 
         const MAP = [
-
             "#######################################",
             "#P        #       #       #          #",
             "#         #       #       #          #",
@@ -541,7 +554,7 @@
             "#         ###     #     ###         ##",
             "#         #       #       #         ##",
             "#         #       #       #         ##",
-            "#         #       #       #         ##",
+            "#         #       #         #         ##",
             "#         #       #       #         ##",
             "#                                   ##",
             "#      ######           ######      ##",
@@ -550,655 +563,136 @@
             "#                                   ##",
             "#                                   ##",
             "#######################################"
-
         ];
 
 
-        const ROWS =
-            MAP.length;
+        const CELL = 20;
+
+        const ROWS = MAP.length;
+        const COLS = MAP[0].length;
 
 
-        const COLS =
-            MAP[0].length;
+        const SPEED = 220;
+        const PLAYER_RADIUS = 8;
 
-
-        canvas.width =
-            COLS * CELL;
-
-        canvas.height =
-            ROWS * CELL;
-
-
-
-        // =====================================================
-        // ESTADO
-        // =====================================================
-
-        let miId = null;
-
-        let salaActual = null;
 
         let jugadores = [];
 
-        let conectado = false;
+        let jugadorLocal = null;
+
+        let posicionesVisuales = new Map();
+
+        let teclas = {};
 
 
-        let jugadorLocal = {
-            x: 30,
-            y: 30
-        };
+        /* =====================================
+           TECLADO
+        ===================================== */
 
+        window.addEventListener("keydown", event => {
 
-        // =====================================================
-        // MOVIMIENTO VISUAL DE JUGADORES REMOTOS
-        // =====================================================
-
-        const posicionesVisuales =
-            new Map();
-
-
-        // =====================================================
-        // TECLAS
-        // =====================================================
-
-        const teclas = {};
-
-
-
-        // =====================================================
-        // CONEXIÓN
-        // =====================================================
-
-        socket.on("connect", () => {
-
-            miId =
-                socket.id;
-
-            conectado =
-                true;
-
-            console.log(
-                "Conectado al servidor:",
-                miId
-            );
+            teclas[event.key.toLowerCase()] = true;
 
         });
 
 
-        socket.on("connect_error", (error) => {
+        window.addEventListener("keyup", event => {
 
-            conectado =
-                false;
-
-            console.error(
-                "Error de conexión:",
-                error
-            );
-
-
-            mensaje.textContent =
-                "No se pudo conectar al servidor.";
+            teclas[event.key.toLowerCase()] = false;
 
         });
 
 
-        socket.on("disconnect", (motivo) => {
+        /* =====================================
+           RECIBIR JUGADORES
+        ===================================== */
 
-            conectado =
-                false;
+        socket.on("actualizarJugadores", lista => {
 
-            console.log(
-                "Desconectado:",
-                motivo
-            );
-
-
-            if (salaActual) {
-
-                mensaje.textContent =
-                    "Se perdió la conexión con el servidor.";
-
-            }
-
-        });
-
-
-
-        // =====================================================
-        // CREAR SALA
-        // =====================================================
-
-        crearSalaBtn.addEventListener(
-            "click",
-            () => {
-
-
-                // Intentar iniciar música mientras
-                // todavía estamos en el menú.
-
-                iniciarMusica();
-
-
-                if (!conectado) {
-
-                    mensaje.textContent =
-                        "Esperá a que el servidor conecte.";
-
-                    return;
-
-                }
-
-
-                mensaje.textContent =
-                    "Creando sala...";
-
-
-                crearSalaBtn.disabled =
-                    true;
-
-
-                socket.emit(
-                    "crearSala"
-                );
-
-
-                setTimeout(() => {
-
-                    crearSalaBtn.disabled =
-                        false;
-
-                }, 2000);
-
-            }
-        );
-
-
-
-        // =====================================================
-        // UNIRSE A SALA
-        // =====================================================
-
-        unirseSalaBtn.addEventListener(
-            "click",
-            intentarUnirse
-        );
-
-
-        codigoInput.addEventListener(
-            "input",
-            () => {
-
-                codigoInput.value =
-                    codigoInput.value
-                        .toUpperCase()
-                        .replace(/[^A-Z0-9]/g, "")
-                        .slice(0, 5);
-
-            }
-        );
-
-
-        codigoInput.addEventListener(
-            "keydown",
-            (event) => {
-
-                if (event.key === "Enter") {
-
-                    intentarUnirse();
-
-                }
-
-            }
-        );
-
-
-        function intentarUnirse() {
-
-
-            // Intentar iniciar música mientras
-            // seguimos en el menú.
-
-            iniciarMusica();
-
-
-            if (!conectado) {
-
-                mensaje.textContent =
-                    "Esperá a que el servidor conecte.";
-
-                return;
-
-            }
-
-
-            const codigo =
-                codigoInput.value
-                    .trim()
-                    .toUpperCase();
-
-
-            if (codigo.length !== 5) {
-
-                mensaje.textContent =
-                    "El código debe tener 5 caracteres.";
-
-                return;
-
-            }
-
-
-            mensaje.textContent =
-                "Entrando a la sala...";
-
-
-            unirseSalaBtn.disabled =
-                true;
-
-
-            socket.emit(
-                "unirseSala",
-                codigo
-            );
-
-
-            setTimeout(() => {
-
-                unirseSalaBtn.disabled =
-                    false;
-
-            }, 2000);
-
-        }
-
-
-
-        // =====================================================
-        // SALA CREADA
-        // =====================================================
-
-        socket.on(
-            "salaCreada",
-            (datos) => {
-
-                console.log(
-                    "salaCreada:",
-                    datos
-                );
-
-
-                if (
-                    !datos ||
-                    typeof datos.codigo !== "string"
-                ) {
-
-                    mensaje.textContent =
-                        "Respuesta inválida del servidor.";
-
-                    return;
-
-                }
-
-
-                entrarAlJuego(
-                    datos.codigo
-                );
-
-            }
-        );
-
-
-
-        // =====================================================
-        // SALA UNIDA
-        // =====================================================
-
-        socket.on(
-            "salaUnida",
-            (datos) => {
-
-                console.log(
-                    "salaUnida:",
-                    datos
-                );
-
-
-                if (
-                    !datos ||
-                    typeof datos.codigo !== "string"
-                ) {
-
-                    mensaje.textContent =
-                        "Respuesta inválida del servidor.";
-
-                    return;
-
-                }
-
-
-                entrarAlJuego(
-                    datos.codigo
-                );
-
-            }
-        );
-
-
-
-        // =====================================================
-        // ERROR DE SALA
-        // =====================================================
-
-        socket.on(
-            "errorSala",
-            (texto) => {
+            if (!Array.isArray(lista)) {
 
                 console.error(
-                    "Error de sala:",
-                    texto
+                    "actualizarJugadores no recibió un array:",
+                    lista
+                );
+
+                return;
+
+            }
+
+
+            jugadores = lista;
+
+
+            jugadorLocal =
+                jugadores.find(
+                    jugador =>
+                        jugador.id === socket.id
                 );
 
 
-                mensaje.textContent =
-                    texto ||
-                    "No se pudo entrar a la sala.";
+            jugadores.forEach(jugador => {
 
+                if (!posicionesVisuales.has(jugador.id)) {
 
-                unirseSalaBtn.disabled =
-                    false;
-
-                crearSalaBtn.disabled =
-                    false;
-
-            }
-        );
-
-
-
-        // =====================================================
-        // ENTRAR AL JUEGO
-        // =====================================================
-
-        function entrarAlJuego(codigo) {
-
-            salaActual =
-                codigo;
-
-
-            codigoSala.textContent =
-                codigo;
-
-
-            mensaje.textContent =
-                "";
-
-
-            /*
-                MUY IMPORTANTE:
-
-                La música se detiene justo cuando
-                se entra al juego.
-            */
-
-            detenerMusica();
-
-
-            /*
-                El botón de música pertenece al menú,
-                por lo que también desaparece.
-            */
-
-            botonMusica.style.display =
-                "none";
-
-
-            menu.style.display =
-                "none";
-
-
-            juego.style.display =
-                "flex";
-
-
-            console.log(
-                "Entraste a la sala:",
-                codigo
-            );
-
-        }
-
-
-
-        // =====================================================
-        // ACTUALIZAR JUGADORES
-        // =====================================================
-
-        socket.on(
-            "actualizarJugadores",
-            (lista) => {
-
-                if (!Array.isArray(lista)) {
-
-                    console.error(
-                        "El servidor no envió un array:",
-                        lista
+                    posicionesVisuales.set(
+                        jugador.id,
+                        {
+                            x: jugador.x,
+                            y: jugador.y,
+                            objetivoX: jugador.x,
+                            objetivoY: jugador.y
+                        }
                     );
 
-                    return;
+                } else {
+
+                    const visual =
+                        posicionesVisuales.get(jugador.id);
+
+                    visual.objetivoX = jugador.x;
+                    visual.objetivoY = jugador.y;
 
                 }
 
-
-                const nuevosJugadores =
-                    lista
-                        .filter(
-                            (jugador) => {
-
-                                return (
-
-                                    jugador &&
-                                    typeof jugador.id === "string" &&
-                                    Number.isFinite(
-                                        Number(jugador.x)
-                                    ) &&
-                                    Number.isFinite(
-                                        Number(jugador.y)
-                                    )
-
-                                );
-
-                            }
-                        )
-                        .map(
-                            (jugador) => {
-
-                                return {
-
-                                    id:
-                                        jugador.id,
-
-                                    x:
-                                        Number(jugador.x),
-
-                                    y:
-                                        Number(jugador.y)
-
-                                };
-
-                            }
-                        );
+            });
 
 
-                jugadores =
-                    nuevosJugadores;
+            for (const id of posicionesVisuales.keys()) {
 
-
-                cantidadJugadores.textContent =
-                    jugadores.length;
-
-
-
-                // =================================================
-                // PREPARAR INTERPOLACIÓN
-                // =================================================
-
-                const idsActuales =
-                    new Set();
-
-
-                jugadores.forEach(
-                    (jugador) => {
-
-                        idsActuales.add(
-                            jugador.id
-                        );
-
-
-                        // Jugador local
-
-                        if (
-                            jugador.id === miId
-                        ) {
-
-                            if (
-                                !estaMoviendose()
-                            ) {
-
-                                jugadorLocal.x +=
-                                    (
-                                        jugador.x -
-                                        jugadorLocal.x
-                                    ) * 0.25;
-
-
-                                jugadorLocal.y +=
-                                    (
-                                        jugador.y -
-                                        jugadorLocal.y
-                                    ) * 0.25;
-
-                            }
-
-                            return;
-
-                        }
-
-
-
-                        // Jugadores remotos
-
-                        const visual =
-                            posicionesVisuales.get(
-                                jugador.id
-                            );
-
-
-                        if (!visual) {
-
-                            posicionesVisuales.set(
-                                jugador.id,
-                                {
-
-                                    x:
-                                        jugador.x,
-
-                                    y:
-                                        jugador.y,
-
-                                    objetivoX:
-                                        jugador.x,
-
-                                    objetivoY:
-                                        jugador.y
-
-                                }
-                            );
-
-                        }
-
-                        else {
-
-                            visual.objetivoX =
-                                jugador.x;
-
-                            visual.objetivoY =
-                                jugador.y;
-
-                        }
-
-                    }
-                );
-
-
-
-                // Eliminar jugadores que ya no están
-
-                for (
-                    const id of posicionesVisuales.keys()
+                if (
+                    !jugadores.some(
+                        jugador => jugador.id === id
+                    )
                 ) {
 
-                    if (
-                        !idsActuales.has(id)
-                    ) {
-
-                        posicionesVisuales.delete(
-                            id
-                        );
-
-                    }
+                    posicionesVisuales.delete(id);
 
                 }
 
             }
-        );
+
+        });
 
 
-
-        // =====================================================
-        // SABER SI SE ESTÁ MOVIENDO
-        // =====================================================
-
-        function estaMoviendose() {
-
-            return (
-
-                teclas["w"] ||
-                teclas["a"] ||
-                teclas["s"] ||
-                teclas["d"] ||
-                teclas["arrowup"] ||
-                teclas["arrowdown"] ||
-                teclas["arrowleft"] ||
-                teclas["arrowright"]
-
-            );
-
-        }
-
-
-
-        // =====================================================
-        // PARED
-        // =====================================================
+        /* =====================================
+           COLISIÓN
+        ===================================== */
 
         function esPared(x, y) {
 
-            const col =
-                Math.floor(
-                    x / CELL
-                );
+            const columna =
+                Math.floor(x / CELL);
 
-
-            const row =
-                Math.floor(
-                    y / CELL
-                );
+            const fila =
+                Math.floor(y / CELL);
 
 
             if (
-                row < 0 ||
-                row >= ROWS ||
-                col < 0 ||
-                col >= COLS
+                fila < 0 ||
+                fila >= ROWS ||
+                columna < 0 ||
+                columna >= COLS
             ) {
 
                 return true;
@@ -1206,141 +700,43 @@
             }
 
 
-            return MAP[row][col] === "#";
+            return MAP[fila][columna] === "#";
 
         }
 
 
-
-        // =====================================================
-        // COLISIÓN
-        // =====================================================
-
         function puedeMoverse(x, y) {
 
-            const radio = 8;
+            const puntos = [
+
+                [x - PLAYER_RADIUS, y - PLAYER_RADIUS],
+                [x + PLAYER_RADIUS, y - PLAYER_RADIUS],
+                [x - PLAYER_RADIUS, y + PLAYER_RADIUS],
+                [x + PLAYER_RADIUS, y + PLAYER_RADIUS]
+
+            ];
 
 
-            return (
-
-                !esPared(
-                    x - radio,
-                    y - radio
-                ) &&
-
-                !esPared(
-                    x + radio,
-                    y - radio
-                ) &&
-
-                !esPared(
-                    x - radio,
-                    y + radio
-                ) &&
-
-                !esPared(
-                    x + radio,
-                    y + radio
-                )
-
+            return puntos.every(
+                ([px, py]) =>
+                    !esPared(px, py)
             );
 
         }
 
 
-
-        // =====================================================
-        // TECLADO
-        // =====================================================
-
-        window.addEventListener(
-            "keydown",
-            (event) => {
-
-                const tecla =
-                    event.key.toLowerCase();
-
-
-                teclas[tecla] =
-                    true;
-
-
-                if (
-                    [
-                        "w",
-                        "a",
-                        "s",
-                        "d",
-                        "arrowup",
-                        "arrowdown",
-                        "arrowleft",
-                        "arrowright"
-                    ].includes(tecla)
-                ) {
-
-                    event.preventDefault();
-
-                }
-
-            }
-        );
-
-
-        window.addEventListener(
-            "keyup",
-            (event) => {
-
-                const tecla =
-                    event.key.toLowerCase();
-
-
-                teclas[tecla] =
-                    false;
-
-            }
-        );
-
-
-        window.addEventListener(
-            "blur",
-            () => {
-
-                for (
-                    const tecla in teclas
-                ) {
-
-                    teclas[tecla] =
-                        false;
-
-                }
-
-            }
-        );
-
-
-
-        // =====================================================
-        // MOVIMIENTO
-        // =====================================================
-
-        let ultimoEnvio =
-            0;
-
+        /* =====================================
+           MOVIMIENTO
+        ===================================== */
 
         function actualizarMovimiento(dt) {
 
-            if (
-                !salaActual ||
-                !conectado
-            ) {
-
+            if (!jugadorLocal) {
                 return;
-
             }
 
 
             let dx = 0;
-
             let dy = 0;
 
 
@@ -1384,68 +780,29 @@
             }
 
 
-            if (
-                dx === 0 &&
-                dy === 0
-            ) {
-
+            if (dx === 0 && dy === 0) {
                 return;
-
             }
 
 
-
-            // =================================================
-            // NORMALIZAR DIAGONAL
-            // =================================================
-
             const longitud =
-                Math.hypot(
-                    dx,
-                    dy
-                );
+                Math.sqrt(dx * dx + dy * dy);
 
 
-            dx /=
-                longitud;
-
-
-            dy /=
-                longitud;
-
-
-
-            // =================================================
-            // VELOCIDAD
-            // =================================================
-
-            const velocidad =
-                220;
+            dx /= longitud;
+            dy /= longitud;
 
 
             const movimiento =
-                velocidad * dt;
+                SPEED * dt;
 
 
+            const nuevoX =
+                jugadorLocal.x + dx * movimiento;
 
-            // =================================================
-            // NUEVA POSICIÓN
-            // =================================================
+            const nuevoY =
+                jugadorLocal.y + dy * movimiento;
 
-            let nuevoX =
-                jugadorLocal.x +
-                dx * movimiento;
-
-
-            let nuevoY =
-                jugadorLocal.y +
-                dy * movimiento;
-
-
-
-            // =================================================
-            // COLISIÓN HORIZONTAL
-            // =================================================
 
             if (
                 puedeMoverse(
@@ -1454,16 +811,10 @@
                 )
             ) {
 
-                jugadorLocal.x =
-                    nuevoX;
+                jugadorLocal.x = nuevoX;
 
             }
 
-
-
-            // =================================================
-            // COLISIÓN VERTICAL
-            // =================================================
 
             if (
                 puedeMoverse(
@@ -1472,95 +823,31 @@
                 )
             ) {
 
-                jugadorLocal.y =
-                    nuevoY;
+                jugadorLocal.y = nuevoY;
 
             }
 
 
-
-            // =================================================
-            // ENVIAR AL SERVIDOR
-            // =================================================
-
-            const ahora =
-                performance.now();
-
-
-            if (
-                ahora -
-                ultimoEnvio >=
-                33
-            ) {
-
-                ultimoEnvio =
-                    ahora;
-
-
-                socket.emit(
-                    "moverJugador",
-                    {
-
-                        x:
-                            jugadorLocal.x,
-
-                        y:
-                            jugadorLocal.y
-
-                    }
-                );
-
-            }
-
-        }
-
-
-
-        // =====================================================
-        // ACTUALIZAR MOVIMIENTO VISUAL REMOTO
-        // =====================================================
-
-        function actualizarJugadoresVisuales(dt) {
-
-            const suavizado =
-                1 -
-                Math.exp(
-                    -18 * dt
-                );
-
-
-            posicionesVisuales.forEach(
-                (visual) => {
-
-                    visual.x +=
-                        (
-                            visual.objetivoX -
-                            visual.x
-                        ) *
-                        suavizado;
-
-
-                    visual.y +=
-                        (
-                            visual.objetivoY -
-                            visual.y
-                        ) *
-                        suavizado;
-
+            socket.emit(
+                "moverJugador",
+                {
+                    x: jugadorLocal.x,
+                    y: jugadorLocal.y
                 }
             );
 
         }
 
 
-
-        // =====================================================
-        // DIBUJAR MAPA
-        // =====================================================
+        /* =====================================
+           DIBUJAR MAPA
+        ===================================== */
 
         function dibujarMapa() {
 
-            ctx.clearRect(
+            ctx.fillStyle = "#050505";
+
+            ctx.fillRect(
                 0,
                 0,
                 canvas.width,
@@ -1580,58 +867,25 @@
                     columna++
                 ) {
 
-                    const x =
-                        columna *
-                        CELL;
-
-
-                    const y =
-                        fila *
-                        CELL;
-
-
                     if (
                         MAP[fila][columna] === "#"
                     ) {
 
-                        ctx.fillStyle =
-                            "#28105f";
-
+                        ctx.fillStyle = "#4d267a";
 
                         ctx.fillRect(
-                            x,
-                            y,
+                            columna * CELL,
+                            fila * CELL,
                             CELL,
                             CELL
                         );
-
 
                         ctx.strokeStyle =
-                            "#713cff";
-
-
-                        ctx.lineWidth =
-                            1;
-
+                            "#7139ad";
 
                         ctx.strokeRect(
-                            x,
-                            y,
-                            CELL,
-                            CELL
-                        );
-
-                    }
-
-                    else {
-
-                        ctx.fillStyle =
-                            "#050505";
-
-
-                        ctx.fillRect(
-                            x,
-                            y,
+                            columna * CELL,
+                            fila * CELL,
                             CELL,
                             CELL
                         );
@@ -1645,159 +899,81 @@
         }
 
 
-
-        // =====================================================
-        // DIBUJAR JUGADORES
-        // =====================================================
+        /* =====================================
+           DIBUJAR JUGADORES
+        ===================================== */
 
         function dibujarJugadores() {
 
-            if (
-                !Array.isArray(jugadores)
-            ) {
-
-                return;
-
-            }
+            const colores = [
+                "#ffd900",
+                "#ff3b3b",
+                "#00eaff",
+                "#53ff53"
+            ];
 
 
             jugadores.forEach(
                 (jugador, indice) => {
 
-                    let x;
-                    let y;
+                    const visual =
+                        posicionesVisuales.get(
+                            jugador.id
+                        );
 
-
-                    // =================================================
-                    // JUGADOR LOCAL
-                    // =================================================
-
-                    if (
-                        jugador.id === miId
-                    ) {
-
-                        x =
-                            jugadorLocal.x;
-
-                        y =
-                            jugadorLocal.y;
-
-                    }
-
-                    // =================================================
-                    // JUGADOR REMOTO
-                    // =================================================
-
-                    else {
-
-                        const visual =
-                            posicionesVisuales.get(
-                                jugador.id
-                            );
-
-
-                        if (!visual) {
-
-                            x =
-                                jugador.x;
-
-                            y =
-                                jugador.y;
-
-                        }
-
-                        else {
-
-                            x =
-                                visual.x;
-
-                            y =
-                                visual.y;
-
-                        }
-
-                    }
-
-
-                    if (
-                        !Number.isFinite(x) ||
-                        !Number.isFinite(y)
-                    ) {
-
+                    if (!visual) {
                         return;
-
                     }
 
-
-
-                    // =================================================
-                    // COLOR
-                    // =================================================
-
-                    if (
-                        jugador.id === miId
-                    ) {
-
-                        ctx.fillStyle =
-                            "#ffe600";
-
-                    }
-
-                    else {
-
-                        const colores = [
-
-                            "#ff3030",
-                            "#00eaff",
-                            "#ff7b00",
-                            "#00ff66"
-
-                        ];
-
-
-                        ctx.fillStyle =
-                            colores[
-                                indice %
-                                colores.length
-                            ];
-
-                    }
-
-
-
-                    // =================================================
-                    // JUGADOR
-                    // =================================================
 
                     ctx.beginPath();
 
-
                     ctx.arc(
-                        x,
-                        y,
-                        8,
+                        visual.x,
+                        visual.y,
+                        PLAYER_RADIUS,
                         0,
                         Math.PI * 2
                     );
 
 
+                    if (jugador.id === socket.id) {
+
+                        ctx.fillStyle = "#ffd900";
+
+                    } else {
+
+                        ctx.fillStyle =
+                            colores[
+                                indice % colores.length
+                            ];
+
+                    }
+
+
                     ctx.fill();
 
+                    ctx.closePath();
 
 
-                    // =================================================
-                    // BORDE
-                    // =================================================
+                    ctx.beginPath();
+
+                    ctx.arc(
+                        visual.x,
+                        visual.y,
+                        PLAYER_RADIUS + 3,
+                        0,
+                        Math.PI * 2
+                    );
 
                     ctx.strokeStyle =
-                        "#ffffff";
-
-
-                    ctx.lineWidth =
-                        2;
-
+                        jugador.id === socket.id
+                            ? "#fff3a0"
+                            : "#ffffff55";
 
                     ctx.stroke();
+
+                    ctx.closePath();
 
                 }
             );
@@ -1805,58 +981,78 @@
         }
 
 
+        /* =====================================
+           GAME LOOP
+        ===================================== */
 
-        // =====================================================
-        // GAME LOOP
-        // =====================================================
-
-        let ultimoTiempo =
-            performance.now();
+        let ultimoTiempo = performance.now();
 
 
-        function gameLoop(tiempo) {
+        function gameLoop(ahora) {
 
             const dt =
                 Math.min(
-                    (
-                        tiempo -
-                        ultimoTiempo
-                    ) / 1000,
-
+                    (ahora - ultimoTiempo) / 1000,
                     0.05
                 );
 
 
-            ultimoTiempo =
-                tiempo;
+            ultimoTiempo = ahora;
 
 
-            actualizarMovimiento(
-                dt
-            );
+            actualizarMovimiento(dt);
 
 
-            actualizarJugadoresVisuales(
-                dt
+            const suavizado =
+                1 - Math.exp(-18 * dt);
+
+
+            posicionesVisuales.forEach(
+                visual => {
+
+                    visual.x +=
+                        (
+                            visual.objetivoX -
+                            visual.x
+                        ) * suavizado;
+
+
+                    visual.y +=
+                        (
+                            visual.objetivoY -
+                            visual.y
+                        ) * suavizado;
+
+                }
             );
 
 
             dibujarMapa();
-
-
             dibujarJugadores();
 
 
-            requestAnimationFrame(
-                gameLoop
-            );
+            requestAnimationFrame(gameLoop);
 
         }
 
 
-        requestAnimationFrame(
-            gameLoop
-        );
+        /* =====================================
+           INICIAR JUEGO
+        ===================================== */
+
+        function iniciarJuego() {
+
+            posicionesVisuales.clear();
+
+            jugadores = [];
+
+            jugadorLocal = null;
+
+            ultimoTiempo = performance.now();
+
+            requestAnimationFrame(gameLoop);
+
+        }
 
     </script>
 
