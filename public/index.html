@@ -402,6 +402,26 @@
 
 
         // =====================================================
+        // MOVIMIENTO VISUAL DE JUGADORES REMOTOS
+        // =====================================================
+
+        /*
+            Cada jugador remoto tiene:
+
+            x / y
+                posición real recibida del servidor
+
+            renderX / renderY
+                posición que se muestra en pantalla
+
+            De esta manera los jugadores no saltan
+            directamente de una posición a otra.
+        */
+
+        const posicionesVisuales = new Map();
+
+
+        // =====================================================
         // TECLAS
         // =====================================================
 
@@ -451,11 +471,6 @@
                 motivo
             );
 
-
-            /*
-                Si ya estábamos jugando,
-                mostramos que se perdió la conexión.
-            */
 
             if (salaActual) {
 
@@ -747,31 +762,6 @@
             "actualizarJugadores",
             (lista) => {
 
-                console.log(
-                    "actualizarJugadores:",
-                    lista
-                );
-
-
-                /*
-                    ESTE ES EL FORMATO CORRECTO:
-
-                    [
-                        {
-                            id: "...",
-                            x: 30,
-                            y: 30
-                        },
-
-                        {
-                            id: "...",
-                            x: 710,
-                            y: 30
-                        }
-                    ]
-                */
-
-
                 if (!Array.isArray(lista)) {
 
                     console.error(
@@ -784,44 +774,48 @@
                 }
 
 
-                // Filtrar datos inválidos
+                const nuevosJugadores =
+                    lista
+                        .filter(
+                            (jugador) => {
+
+                                return (
+
+                                    jugador &&
+                                    typeof jugador.id === "string" &&
+                                    Number.isFinite(
+                                        Number(jugador.x)
+                                    ) &&
+                                    Number.isFinite(
+                                        Number(jugador.y)
+                                    )
+
+                                );
+
+                            }
+                        )
+                        .map(
+                            (jugador) => {
+
+                                return {
+
+                                    id:
+                                        jugador.id,
+
+                                    x:
+                                        Number(jugador.x),
+
+                                    y:
+                                        Number(jugador.y)
+
+                                };
+
+                            }
+                        );
+
 
                 jugadores =
-                    lista.filter(
-                        (jugador) => {
-
-                            return (
-
-                                jugador &&
-                                typeof jugador.id === "string" &&
-                                Number.isFinite(
-                                    Number(jugador.x)
-                                ) &&
-                                Number.isFinite(
-                                    Number(jugador.y)
-                                )
-
-                            );
-
-                        }
-                    ).map(
-                        (jugador) => {
-
-                            return {
-
-                                id:
-                                    jugador.id,
-
-                                x:
-                                    Number(jugador.x),
-
-                                y:
-                                    Number(jugador.y)
-
-                            };
-
-                        }
-                    );
+                    nuevosJugadores;
 
 
                 cantidadJugadores.textContent =
@@ -829,30 +823,120 @@
 
 
 
-                // Buscar jugador local
+                // =================================================
+                // PREPARAR INTERPOLACIÓN
+                // =================================================
 
-                const yo =
-                    jugadores.find(
-                        (jugador) =>
+                const idsActuales =
+                    new Set();
+
+
+                jugadores.forEach(
+                    (jugador) => {
+
+                        idsActuales.add(
+                            jugador.id
+                        );
+
+
+                        // El jugador local se maneja
+                        // directamente con jugadorLocal.
+
+                        if (
                             jugador.id === miId
-                    );
+                        ) {
+
+                            if (
+                                !estaMoviendose()
+                            ) {
+
+                                /*
+                                    Cuando dejamos de movernos,
+                                    hacemos una pequeña corrección
+                                    hacia la posición del servidor
+                                    en vez de pegar un salto.
+                                */
+
+                                jugadorLocal.x +=
+                                    (
+                                        jugador.x -
+                                        jugadorLocal.x
+                                    ) * 0.25;
 
 
-                if (yo) {
+                                jugadorLocal.y +=
+                                    (
+                                        jugador.y -
+                                        jugadorLocal.y
+                                    ) * 0.25;
 
-                    /*
-                        Si todavía no estamos presionando
-                        ninguna tecla, sincronizamos
-                        nuestra posición con el servidor.
-                    */
+                            }
 
-                    if (!estaMoviendose()) {
+                            return;
 
-                        jugadorLocal.x =
-                            yo.x;
+                        }
 
-                        jugadorLocal.y =
-                            yo.y;
+
+
+                        // Jugadores remotos
+
+                        const visual =
+                            posicionesVisuales.get(
+                                jugador.id
+                            );
+
+
+                        if (!visual) {
+
+                            posicionesVisuales.set(
+                                jugador.id,
+                                {
+
+                                    x:
+                                        jugador.x,
+
+                                    y:
+                                        jugador.y,
+
+                                    objetivoX:
+                                        jugador.x,
+
+                                    objetivoY:
+                                        jugador.y
+
+                                }
+                            );
+
+                        }
+
+                        else {
+
+                            visual.objetivoX =
+                                jugador.x;
+
+                            visual.objetivoY =
+                                jugador.y;
+
+                        }
+
+                    }
+                );
+
+
+
+                // Eliminar jugadores que ya no están
+
+                for (
+                    const id of posicionesVisuales.keys()
+                ) {
+
+                    if (
+                        !idsActuales.has(id)
+                    ) {
+
+                        posicionesVisuales.delete(
+                            id
+                        );
 
                     }
 
@@ -1104,12 +1188,14 @@
             }
 
 
-            // Normalizar diagonal
+            // =================================================
+            // NORMALIZAR DIAGONAL
+            // =================================================
 
             const longitud =
-                Math.sqrt(
-                    dx * dx +
-                    dy * dy
+                Math.hypot(
+                    dx,
+                    dy
                 );
 
 
@@ -1121,6 +1207,11 @@
                 longitud;
 
 
+
+            // =================================================
+            // VELOCIDAD
+            // =================================================
+
             const velocidad =
                 220;
 
@@ -1129,18 +1220,25 @@
                 velocidad * dt;
 
 
-            const nuevoX =
+
+            // =================================================
+            // NUEVA POSICIÓN
+            // =================================================
+
+            let nuevoX =
                 jugadorLocal.x +
                 dx * movimiento;
 
 
-            const nuevoY =
+            let nuevoY =
                 jugadorLocal.y +
                 dy * movimiento;
 
 
 
-            // Movimiento horizontal
+            // =================================================
+            // COLISIÓN HORIZONTAL
+            // =================================================
 
             if (
                 puedeMoverse(
@@ -1156,7 +1254,9 @@
 
 
 
-            // Movimiento vertical
+            // =================================================
+            // COLISIÓN VERTICAL
+            // =================================================
 
             if (
                 puedeMoverse(
@@ -1172,7 +1272,12 @@
 
 
 
-            // Enviar posición al servidor
+            // =================================================
+            // ENVIAR AL SERVIDOR
+            //
+            // En vez de mandar demasiado seguido,
+            // mandamos aproximadamente 30 veces por segundo.
+            // =================================================
 
             const ahora =
                 performance.now();
@@ -1202,6 +1307,51 @@
                 );
 
             }
+
+        }
+
+
+
+        // =====================================================
+        // ACTUALIZAR MOVIMIENTO VISUAL REMOTO
+        // =====================================================
+
+        function actualizarJugadoresVisuales(dt) {
+
+            /*
+                La interpolación usa una curva suave.
+
+                Esto evita que un jugador remoto
+                aparezca saltando entre posiciones.
+            */
+
+            const suavizado =
+                1 -
+                Math.exp(
+                    -18 * dt
+                );
+
+
+            posicionesVisuales.forEach(
+                (visual) => {
+
+                    visual.x +=
+                        (
+                            visual.objetivoX -
+                            visual.x
+                        ) *
+                        suavizado;
+
+
+                    visual.y +=
+                        (
+                            visual.objetivoY -
+                            visual.y
+                        ) *
+                        suavizado;
+
+                }
+            );
 
         }
 
@@ -1317,12 +1467,59 @@
             jugadores.forEach(
                 (jugador, indice) => {
 
-                    const x =
-                        Number(jugador.x);
+                    let x;
+                    let y;
 
 
-                    const y =
-                        Number(jugador.y);
+                    // =================================================
+                    // JUGADOR LOCAL
+                    // =================================================
+
+                    if (
+                        jugador.id === miId
+                    ) {
+
+                        x =
+                            jugadorLocal.x;
+
+                        y =
+                            jugadorLocal.y;
+
+                    }
+
+                    // =================================================
+                    // JUGADOR REMOTO
+                    // =================================================
+
+                    else {
+
+                        const visual =
+                            posicionesVisuales.get(
+                                jugador.id
+                            );
+
+
+                        if (!visual) {
+
+                            x =
+                                jugador.x;
+
+                            y =
+                                jugador.y;
+
+                        }
+
+                        else {
+
+                            x =
+                                visual.x;
+
+                            y =
+                                visual.y;
+
+                        }
+
+                    }
 
 
                     if (
@@ -1336,7 +1533,9 @@
 
 
 
-                    // Color
+                    // =================================================
+                    // COLOR
+                    // =================================================
 
                     if (
                         jugador.id === miId
@@ -1369,7 +1568,9 @@
 
 
 
-                    // Jugador
+                    // =================================================
+                    // JUGADOR
+                    // =================================================
 
                     ctx.beginPath();
 
@@ -1387,7 +1588,9 @@
 
 
 
-                    // Borde
+                    // =================================================
+                    // BORDE
+                    // =================================================
 
                     ctx.strokeStyle =
                         "#ffffff";
@@ -1418,9 +1621,10 @@
 
             const dt =
                 Math.min(
-                    (tiempo -
-                        ultimoTiempo) /
-                    1000,
+                    (
+                        tiempo -
+                        ultimoTiempo
+                    ) / 1000,
 
                     0.05
                 );
@@ -1431,6 +1635,11 @@
 
 
             actualizarMovimiento(
+                dt
+            );
+
+
+            actualizarJugadoresVisuales(
                 dt
             );
 
