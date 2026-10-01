@@ -172,6 +172,44 @@
 
 
         /* =====================================================
+           BOTÓN DE MÚSICA
+        ===================================================== */
+
+        #botonMusica {
+            position: absolute;
+
+            top: 15px;
+            right: 15px;
+
+            z-index: 50;
+
+            width: 48px;
+            height: 48px;
+
+            padding: 0;
+
+            border-radius: 50%;
+
+            background: rgba(0, 0, 0, 0.85);
+
+            border: 2px solid #713cff;
+
+            font-size: 21px;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            cursor: pointer;
+        }
+
+
+        #botonMusica:hover {
+            background: #28105f;
+        }
+
+
+        /* =====================================================
            CANVAS
         ===================================================== */
 
@@ -192,6 +230,19 @@
 
 
 <body>
+
+
+    <!-- =====================================================
+         MÚSICA
+    ===================================================== -->
+
+    <audio
+        id="musicaJuego"
+        src="musica.mp3"
+        loop
+        preload="auto">
+    </audio>
+
 
 
     <!-- =====================================================
@@ -263,6 +314,15 @@
         </div>
 
 
+        <!-- BOTÓN MÚSICA -->
+
+        <button
+            id="botonMusica"
+            title="Activar/desactivar música">
+            🔊
+        </button>
+
+
         <canvas id="cancha"></canvas>
 
     </div>
@@ -326,6 +386,169 @@
 
 
         // =====================================================
+        // MÚSICA
+        // =====================================================
+
+        const musicaJuego =
+            document.getElementById("musicaJuego");
+
+        const botonMusica =
+            document.getElementById("botonMusica");
+
+
+        let musicaActiva = true;
+
+
+        musicaJuego.volume = 0.28;
+
+
+        function iniciarMusica() {
+
+            if (!musicaActiva) {
+                return;
+            }
+
+
+            musicaJuego.volume = 0.28;
+
+
+            const promesa =
+                musicaJuego.play();
+
+
+            if (promesa !== undefined) {
+
+                promesa
+                    .then(() => {
+
+                        musicaActiva = true;
+
+                        botonMusica.textContent =
+                            "🔊";
+
+                    })
+                    .catch(() => {
+
+                        /*
+                            Algunos navegadores bloquean
+                            el autoplay.
+
+                            Si ocurre, esperamos al próximo
+                            clic del usuario.
+                        */
+
+                        console.log(
+                            "El navegador bloqueó el autoplay."
+                        );
+
+                    });
+
+            }
+
+        }
+
+
+        function reintentarMusica() {
+
+            if (
+                juego.style.display !== "flex" ||
+                !musicaActiva
+            ) {
+
+                return;
+
+            }
+
+
+            musicaJuego.play()
+                .then(() => {
+
+                    botonMusica.textContent =
+                        "🔊";
+
+                })
+                .catch(() => {});
+
+        }
+
+
+        botonMusica.addEventListener(
+            "click",
+            (event) => {
+
+                event.stopPropagation();
+
+
+                if (musicaJuego.paused) {
+
+                    musicaActiva = true;
+
+                    musicaJuego.volume =
+                        0.28;
+
+                    musicaJuego.play()
+                        .then(() => {
+
+                            botonMusica.textContent =
+                                "🔊";
+
+                        })
+                        .catch(() => {
+
+                            botonMusica.textContent =
+                                "🔇";
+
+                        });
+
+                }
+
+                else {
+
+                    musicaActiva = false;
+
+                    musicaJuego.pause();
+
+                    botonMusica.textContent =
+                        "🔇";
+
+                }
+
+            }
+        );
+
+
+        /*
+            Si el navegador bloqueó el autoplay,
+            cualquier clic dentro del juego intenta
+            iniciar nuevamente la música.
+        */
+
+        juego.addEventListener(
+            "click",
+            reintentarMusica
+        );
+
+
+        window.addEventListener(
+            "keydown",
+            () => {
+
+                if (
+                    juego.style.display === "flex" &&
+                    musicaActiva &&
+                    musicaJuego.paused
+                ) {
+
+                    reintentarMusica();
+
+                }
+
+            }
+        );
+
+
+
+        // =====================================================
         // MAPA
         // =====================================================
 
@@ -369,9 +592,12 @@
         ];
 
 
-        const ROWS = MAP.length;
+        const ROWS =
+            MAP.length;
 
-        const COLS = MAP[0].length;
+
+        const COLS =
+            MAP[0].length;
 
 
         canvas.width =
@@ -405,20 +631,8 @@
         // MOVIMIENTO VISUAL DE JUGADORES REMOTOS
         // =====================================================
 
-        /*
-            Cada jugador remoto tiene:
-
-            x / y
-                posición real recibida del servidor
-
-            renderX / renderY
-                posición que se muestra en pantalla
-
-            De esta manera los jugadores no saltan
-            directamente de una posición a otra.
-        */
-
-        const posicionesVisuales = new Map();
+        const posicionesVisuales =
+            new Map();
 
 
         // =====================================================
@@ -434,9 +648,11 @@
 
         socket.on("connect", () => {
 
-            miId = socket.id;
+            miId =
+                socket.id;
 
-            conectado = true;
+            conectado =
+                true;
 
             console.log(
                 "Conectado al servidor:",
@@ -448,7 +664,8 @@
 
         socket.on("connect_error", (error) => {
 
-            conectado = false;
+            conectado =
+                false;
 
             console.error(
                 "Error de conexión:",
@@ -464,7 +681,8 @@
 
         socket.on("disconnect", (motivo) => {
 
-            conectado = false;
+            conectado =
+                false;
 
             console.log(
                 "Desconectado:",
@@ -490,6 +708,15 @@
         crearSalaBtn.addEventListener(
             "click",
             () => {
+
+                /*
+                    Intentamos iniciar la música aquí
+                    porque este clic sí cuenta como
+                    interacción directa del usuario.
+                */
+
+                iniciarMusica();
+
 
                 if (!conectado) {
 
@@ -565,6 +792,15 @@
 
 
         function intentarUnirse() {
+
+            /*
+                Intentamos comenzar la música desde
+                el clic del botón para evitar el bloqueo
+                de autoplay.
+            */
+
+            iniciarMusica();
+
 
             if (!conectado) {
 
@@ -745,6 +981,14 @@
                 "flex";
 
 
+            /*
+                Iniciar música al entrar
+                definitivamente a la partida.
+            */
+
+            iniciarMusica();
+
+
             console.log(
                 "Entraste a la sala:",
                 codigo
@@ -849,13 +1093,6 @@
                             if (
                                 !estaMoviendose()
                             ) {
-
-                                /*
-                                    Cuando dejamos de movernos,
-                                    hacemos una pequeña corrección
-                                    hacia la posición del servidor
-                                    en vez de pegar un salto.
-                                */
 
                                 jugadorLocal.x +=
                                     (
@@ -1274,9 +1511,6 @@
 
             // =================================================
             // ENVIAR AL SERVIDOR
-            //
-            // En vez de mandar demasiado seguido,
-            // mandamos aproximadamente 30 veces por segundo.
             // =================================================
 
             const ahora =
@@ -1317,13 +1551,6 @@
         // =====================================================
 
         function actualizarJugadoresVisuales(dt) {
-
-            /*
-                La interpolación usa una curva suave.
-
-                Esto evita que un jugador remoto
-                aparezca saltando entre posiciones.
-            */
 
             const suavizado =
                 1 -
